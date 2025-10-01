@@ -27,7 +27,8 @@ dependencies = [
     "ollama",
     "watchdog",
     "prompt-toolkit",
-    "uv"
+    "uv",
+    "mcp"
 ]
 
 [project.urls]

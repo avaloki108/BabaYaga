@@ -108,9 +108,43 @@ babayaga
 # Or run directly
 babayaga audit ./my-contract/
 babayaga quick MyContract.sol
+
+# Start MCP chat mode (interact with MCP servers)
+babayaga mcp
 ```
 
 ## 📖 Usage Guide
+
+### MCP Integration
+
+BabaYaga now supports MCP (Model Context Protocol) servers for extended tool capabilities:
+
+```bash
+# Start MCP chat mode
+babayaga mcp
+
+# Use with specific model
+babayaga mcp --model qwen2.5-coder:32b
+```
+
+**Setting up MCP Servers:**
+
+1. Copy the example configuration:
+   ```bash
+   mkdir -p ~/.babayaga
+   cp mcp_servers.json.example ~/.babayaga/mcp_servers.json
+   ```
+
+2. Edit `~/.babayaga/mcp_servers.json` to configure your MCP servers
+
+3. Start MCP chat mode to interact with connected servers
+
+**Available MCP Servers:**
+- **Filesystem**: Read/write files in allowed directories
+- **Brave Search**: Web search capabilities
+- **GitHub**: Repository interaction
+- **Postgres**: Database queries
+- **Custom**: Add your own MCP servers
 
 ### Interactive Client
 

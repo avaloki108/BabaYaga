@@ -40,6 +40,28 @@ def elite_hunt(
         console.print(f"[bold red]Failed to start elite hunt: {e}[/bold red]")
 
 @app.command()
+def mcp(
+    model: Annotated[str, typer.Option(help="Ollama model to use.")] = "qwen2.5-coder:7b"
+):
+    """
+    Start MCP chat mode - interact with Ollama and MCP servers.
+    """
+    import asyncio
+    from babayaga.mcp.client import MCPClient
+    
+    async def run_mcp():
+        client = MCPClient(model=model, console=console)
+        try:
+            await client.chat_loop()
+        finally:
+            await client.cleanup()
+    
+    try:
+        asyncio.run(run_mcp())
+    except KeyboardInterrupt:
+        console.print("\n[yellow]MCP chat ended[/yellow]")
+
+@app.command()
 def status():
     """
     Check the status of BabaYaga and its dependencies.

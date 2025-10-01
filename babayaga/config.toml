@@ -87,3 +87,19 @@ include_remediation = true
 
 # Include an analysis of the potential economic impact.
 include_economic_impact = true
+
+
+# -----------------------------------------------------------------------------
+# MCP (Model Context Protocol) CONFIGURATION
+# Configure MCP servers for extended tool capabilities
+# -----------------------------------------------------------------------------
+[mcp]
+# Enable MCP server integration
+enabled = true
+
+# Auto-discover MCP servers from Claude Desktop config
+auto_discovery = false
+
+# Path to MCP servers configuration file
+# Create this file at ~/.babayaga/mcp_servers.json
+config_file = "~/.babayaga/mcp_servers.json"
