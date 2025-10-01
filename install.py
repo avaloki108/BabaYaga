@@ -270,7 +270,7 @@ class BabaYagaInstaller:
                 return
         
         default_config = """[model]
-default_model = "qwen2.5-coder:7b"
+default_model = "ollama/gpt-oss:20b"
 temperature = 0.7
 top_p = 0.9
 max_tokens = 2000

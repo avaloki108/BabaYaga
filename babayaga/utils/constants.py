@@ -1,4 +1,4 @@
-DEFAULT_MODEL = "qwen3-coder:30b"
+DEFAULT_MODEL = "ollama/gpt-oss:20b"
 DEFAULT_OLLAMA_HOST = "http://localhost:11434"
 DEFAULT_COMPLETION_STYLE = {
     "completion-menu.completion": "bg:#008888 #ffffff",

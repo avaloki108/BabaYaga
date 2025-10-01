@@ -41,7 +41,7 @@ def elite_hunt(
 
 @app.command()
 def mcp(
-    model: Annotated[str, typer.Option(help="Ollama model to use.")] = "qwen2.5-coder:7b"
+    model: Annotated[str, typer.Option(help="Ollama model to use.")] = "ollama/gpt-oss:20b"
 ):
     """
     Start MCP chat mode - interact with Ollama and MCP servers.

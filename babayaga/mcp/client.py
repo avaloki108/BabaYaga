@@ -16,7 +16,7 @@ from ..config.babayaga_config import BabaYagaConfigManager
 class MCPClient:
     """MCP Client for interacting with Ollama models and MCP servers within BabaYaga."""
 
-    def __init__(self, model: str = "qwen2.5-coder:7b", host: str = "http://localhost:11434", console: Optional[Console] = None):
+    def __init__(self, model: str = "ollama/gpt-oss:20b", host: str = "http://localhost:11434", console: Optional[Console] = None):
         self.exit_stack = AsyncExitStack()
         self.ollama = ollama.AsyncClient(host=host)
         self.console = console or Console()
