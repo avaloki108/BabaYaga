@@ -179,26 +179,26 @@ Include specific library recommendations (OpenZeppelin, etc.) and explain trade-
         "3) Identify deviations or edge-cases that break invariants or fairness, even if NOT in SWC.\n"
         "4) Propose minimal tests to falsify each suspected issue.\n"
         "Output Schema (strict JSON):\n"
-        "{\n"
-        '  "contract": {"path": "string", "name": "string|null"},\n'
+        "{{\n"
+        '  "contract": {{"path": "string", "name": "string|null"}},\n'
         '  "inferred_intent": ["string", ...],\n'
         '  "invariants": [\n'
-        '    {"name": "string", "description": "string", "type": "conservation|bound|permission|liveness|ordering|other"}\n'
+        '    {{"name": "string", "description": "string", "type": "conservation|bound|permission|liveness|ordering|other"}}\n'
         "  ],\n"
         '  "suspicions": [\n'
-        "    {\n"
+        "    {{\n"
         '      "title": "string",\n'
         '      "category": "logic|authz|dos|reentrancy|price|time|precision|upgradeability|economic|other",\n'
         '      "severity": "critical|high|medium|low|info",\n'
-        '      "locations": [{"file": "string", "line_start": 0, "line_end": 0}],\n'
+        '      "locations": [{{"file": "string", "line_start": 0, "line_end": 0}}],\n'
         '      "check_ids": ["SWC-xxx", "CWE-xxx", "CHECKLIST-ID"],\n'
         '      "rationale": "<= 120 words",\n'
         '      "proposed_tests": [\n'
-        '        {"framework": "foundry|hardhat", "name": "string", "idea": "string", "assertion": "string"}\n'
+        '        {{"framework": "foundry|hardhat", "name": "string", "idea": "string", "assertion": "string"}}\n'
         "      ]\n"
-        "    }\n"
+        "    }}\n"
         "  ]\n"
-        "}\n"
+        "}}\n"
         "Respond ONLY with valid JSON following the schema above."
     )
 
