@@ -1,8 +1,8 @@
-# BabaYaga 🛡️
+# Web3AuditMCP 🛡️
 
 **The most comprehensive smart contract auditing tool powered by local LLMs**
 
-BabaYaga combines the best features of Slither, Mythril, Foundry fuzzing, and Hardhat checks with an AI-powered orchestration layer for end-to-end security audits.
+Web3AuditMCP combines the best features of Slither, Mythril, Foundry fuzzing, and Hardhat checks with an AI-powered orchestration layer for end-to-end security audits.
 
 ## ✨ Features
 
@@ -29,7 +29,7 @@ BabaYaga combines the best features of Slither, Mythril, Foundry fuzzing, and Ha
 ```bash
 # Clone the repository
 git clone <repository_url>
-cd BabaYaga
+cd Web3AuditMCP
 
 # Install with uv
 uv pip install -e .
@@ -42,7 +42,7 @@ pip install -e .
 
 ```bash
 # Start the interactive client
-babayaga
+web3audit-mcp
 
 # Run a comprehensive audit
 audit ./contracts/MyContract.sol
@@ -59,7 +59,7 @@ help
 
 ## 🛠️ Architecture
 
-BabaYaga follows a modular architecture with clear separation of concerns:
+Web3AuditMCP follows a modular architecture with clear separation of concerns:
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
@@ -93,7 +93,7 @@ BabaYaga follows a modular architecture with clear separation of concerns:
 
 ### Model Configuration
 
-BabaYaga supports various Ollama models for AI-powered analysis:
+Web3AuditMCP supports various Ollama models for AI-powered analysis:
 
 ```bash
 # Select a model
@@ -118,7 +118,7 @@ The system automatically detects and installs security tools:
 
 ## 📋 Vulnerability Detection
 
-BabaYaga detects a comprehensive range of vulnerabilities:
+Web3AuditMCP detects a comprehensive range of vulnerabilities:
 
 ### High Severity
 - Reentrancy attacks
@@ -157,7 +157,7 @@ pytest tests/unit/
 pytest tests/integration/
 
 # Run with coverage
-pytest --cov=babayaga
+pytest --cov=web3audit_mcp
 ```
 
 ### Test Structure
@@ -210,7 +210,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ```bash
 # Clone and setup development environment
 git clone <repository_url>
-cd BabaYaga
+cd Web3AuditMCP
 
 # Install in development mode
 uv pip install -e ".[dev]"
@@ -237,8 +237,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links
 
 - [Documentation](docs/)
-- [Bug Reports](https://github.com/user/babayaga/issues)
-- [Feature Requests](https://github.com/user/babayaga/discussions)
+- [Bug Reports](https://github.com/user/web3audit-mcp/issues)
+- [Feature Requests](https://github.com/user/web3audit-mcp/discussions)
 - [Security Policy](SECURITY.md)
 
 ---

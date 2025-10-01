@@ -1,4 +1,4 @@
-"""BabaYaga Client - A TUI client for performing smart contract audits"""
+"""Web3AuditMCP Client - A TUI client for performing smart contract audits"""
 import asyncio
 import os
 from contextlib import AsyncExitStack
@@ -30,8 +30,8 @@ from .models.config_manager import ModelConfigManager
 from .tools.manager import ToolManager
 
 
-class BabaYagaClient:
-    """Main client class for BabaYaga"""
+class Web3AuditClient:
+    """Main client class for Web3AuditMCP"""
 
     def __init__(self, model: str = DEFAULT_MODEL, host: str = DEFAULT_OLLAMA_HOST):
         self.exit_stack = AsyncExitStack()
@@ -87,7 +87,7 @@ class BabaYagaClient:
         features_table.add_row("📋 Custom Checks", "Bug bounty checklist with 500+ vulnerability patterns")
         features_table.add_row("🤖 AI-Powered", "Local LLM integration for intelligent analysis")
         
-        welcome_content = f"""[bold cyan]Welcome to BabaYaga! 🕵️‍♂️[/bold cyan]
+        welcome_content = f"""[bold cyan]Welcome to Web3AuditMCP! 🕵️‍♂️[/bold cyan]
 
 [bold]The most comprehensive smart contract auditing tool[/bold]
 Combining the power of Slither, Mythril, Foundry, and AI-driven analysis.
@@ -99,7 +99,7 @@ Combining the power of Slither, Mythril, Foundry, and AI-driven analysis.
 
         self.console.print(Panel(
             welcome_content,
-            title="[bold]BabaYaga[/bold]",
+            title="[bold]Web3AuditMCP[/bold]",
             border_style="bold blue",
             expand=False
         ))
@@ -115,7 +115,7 @@ Combining the power of Slither, Mythril, Foundry, and AI-driven analysis.
             query = await self.get_user_input()
 
             if query.lower() in ["quit", "exit", "bye"]:
-                self.console.print("[bold blue]🛡️ Exiting BabaYaga. Stay secure! 👋[/bold blue]")
+                self.console.print("[bold blue]🛡️ Exiting Web3AuditMCP. Stay secure! 👋[/bold blue]")
                 break
 
             if query.lower() in ["help", "h"]:
@@ -238,9 +238,9 @@ You are a smart contract security expert. When analyzing code or answering quest
         commands_table.add_row("`stats`", "Display security tools status and statistics")
         commands_table.add_row("`clear` or `cc`", "Clear the screen and conversation history")
         commands_table.add_row("`help` or `h`", "Display this help message")
-        commands_table.add_row("`quit`, `exit`, `bye`", "Exit BabaYaga")
+        commands_table.add_row("`quit`, `exit`, `bye`", "Exit Web3AuditMCP")
         
-        help_content = f"""[bold]BabaYaga Commands:[/bold]
+        help_content = f"""[bold]Web3AuditMCP Commands:[/bold]
 
 {commands_table}
 
@@ -269,13 +269,13 @@ def main(
     host: str = typer.Option(DEFAULT_OLLAMA_HOST, "--host", "-H", help="Ollama host URL."),
     version: bool = typer.Option(False, "--version", "-v", help="Show version and exit.")
 ):
-    """BabaYaga - Comprehensive Smart Contract Security Auditing Tool"""
+    """Web3AuditMCP - Comprehensive Smart Contract Security Auditing Tool"""
     if version:
-        print(f"BabaYaga Version: {__version__}")
+        print(f"Web3AuditMCP Version: {__version__}")
         raise typer.Exit()
 
     async def run_client():
-        client = BabaYagaClient(model=model, host=host)
+        client = Web3AuditClient(model=model, host=host)
         await client.main_loop()
 
     asyncio.run(run_client())

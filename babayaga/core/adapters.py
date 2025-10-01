@@ -1,4 +1,4 @@
-"""Advanced adapter system for BabaYaga inspired by production frameworks."""
+"""Advanced adapter system for Web3AuditMCP inspired by production frameworks."""
 
 import asyncio
 import subprocess

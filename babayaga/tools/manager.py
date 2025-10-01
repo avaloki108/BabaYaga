@@ -1,4 +1,4 @@
-"""Tool management for BabaYaga."""
+"""Tool management for Web3AuditMCP."""
 from typing import List, Dict, Any, Optional
 from rich.console import Console
 from rich.panel import Panel

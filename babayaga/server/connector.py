@@ -1,4 +1,4 @@
-"""Server connector for BabaYaga."""
+"""Server connector for Web3AuditMCP."""
 from typing import List, Dict, Any, Optional, Tuple
 from rich.console import Console
 

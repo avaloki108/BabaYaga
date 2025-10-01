@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enhanced installation script for BabaYaga with comprehensive setup."""
+"""Enhanced installation script for Web3AuditMCP with comprehensive setup."""
 
 import os
 import sys
@@ -15,8 +15,8 @@ from rich.prompt import Confirm
 
 console = Console()
 
-class BabaYagaInstaller:
-    """Comprehensive installer for BabaYaga and its dependencies."""
+class Web3AuditInstaller:
+    """Comprehensive installer for Web3AuditMCP and its dependencies."""
     
     def __init__(self):
         self.system = platform.system().lower()
@@ -306,7 +306,7 @@ class BabaYagaInstaller:
         
         console.print("\n[bold]⚙️ Creating Configuration[/bold]")
         
-        config_dir = Path.home() / ".babayaga"
+        config_dir = Path.home() / ".web3audit"
         config_dir.mkdir(exist_ok=True)
         
         config_file = config_dir / "config.toml"
@@ -365,7 +365,7 @@ Enhanced Smart Contract Security Auditing Platform
         
         console.print(Panel(
             f"[bold cyan]{banner}[/bold cyan]\n\n[bold]🚀 Installation Wizard[/bold]",
-            title="BabaYaga Installer",
+            title="Web3AuditMCP Installer",
             border_style="green"
         ))
         
@@ -393,11 +393,11 @@ Enhanced Smart Contract Security Auditing Platform
         console.print(Panel(
             "[bold green]🎉 Installation Complete![/bold green]\n\n"
             "[bold]Next Steps:[/bold]\n"
-            "1. Run: [cyan]babayaga[/cyan] to start the client\n"
-            "2. Try: [cyan]babayaga audit ./my-contract/[/cyan]\n"
-            "3. Check status: [cyan]babayaga status[/cyan]\n\n"
-            "[dim]For help: babayaga --help[/dim]",
-            title="🛡️ BabaYaga Ready",
+            "1. Run: [cyan]web3audit-mcp[/cyan] to start the client\n"
+            "2. Try: [cyan]web3audit-mcp audit ./my-contract/[/cyan]\n"
+            "3. Check status: [cyan]web3audit-mcp status[/cyan]\n\n"
+            "[dim]For help: web3audit-mcp --help[/dim]",
+            title="🛡️ Web3AuditMCP Ready",
             border_style="green"
         ))
         
@@ -405,7 +405,7 @@ Enhanced Smart Contract Security Auditing Platform
 
 def main():
     """Main installation entry point."""
-    installer = BabaYagaInstaller()
+    installer = Web3AuditInstaller()
     
     try:
         success = installer.run_installation()

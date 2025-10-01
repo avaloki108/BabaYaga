@@ -1,4 +1,4 @@
-"""Main entry point for the BabaYaga package."""
+"""Main entry point for the Web3AuditMCP package."""
 from .cli import run_cli
 
 if __name__ == "__main__":

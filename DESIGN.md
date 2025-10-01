@@ -1,8 +1,8 @@
-# BabaYaga Design Document
+# Web3AuditMCP Design Document
 
 ## 1. Introduction
 
-BabaYaga is a comprehensive, autonomous smart contract auditing tool designed to enhance the security and reliability of Web3 projects. It integrates the strengths of leading static and dynamic analysis tools, including Slither, Mythril, and Foundry, with a powerful orchestration layer that automates end-to-end audit plans. This document outlines the architectural design, component interfaces, and implementation plan for BabaYaga.
+Web3AuditMCP is a comprehensive, autonomous smart contract auditing tool designed to enhance the security and reliability of Web3 projects. It integrates the strengths of leading static and dynamic analysis tools, including Slither, Mythril, and Foundry, with a powerful orchestration layer that automates end-to-end audit plans. This document outlines the architectural design, component interfaces, and implementation plan for Web3AuditMCP.
 
 ## 2. Goals and Objectives
 
@@ -14,7 +14,7 @@ BabaYaga is a comprehensive, autonomous smart contract auditing tool designed to
 
 ## 3. System Architecture
 
-BabaYaga will be built upon a modular architecture consisting of the following key components:
+Web3AuditMCP will be built upon a modular architecture consisting of the following key components:
 
 *   **Orchestration Layer:** The core of the system, responsible for managing the audit lifecycle, coordinating the execution of analysis modules, and aggregating the results.
 *   **Analysis Modules:** A collection of individual modules that perform specific security analysis tasks. Each module will wrap an existing tool (e.g., Slither, Mythril) or implement a custom analysis technique.
@@ -40,7 +40,7 @@ Each Analysis Module will implement a common interface to ensure interoperabilit
 
 ## 5. Implementation Plan
 
-The development of BabaYaga will be divided into the following phases:
+The development of Web3AuditMCP will be divided into the following phases:
 
 1.  **Phase 1: Core Implementation (Current Focus)**
     *   Implement the core Orchestration Layer.
@@ -66,11 +66,11 @@ The immediate next step is to begin the implementation of the core components as
 
 ## 7. Detailed Architecture
 
-The following diagram illustrates the high-level architecture of BabaYaga:
+The following diagram illustrates the high-level architecture of Web3AuditMCP:
 
 ```mermaid
 graph TD
-    A[BabaYagaClient] --> B{OrchestrationLayer};
+    A[Web3AuditClient] --> B{OrchestrationLayer};
     B --> C[AnalysisModule: Slither];
     B --> D[AnalysisModule: Mythril];
     B --> E[AnalysisModule: Foundry];
@@ -85,7 +85,7 @@ graph TD
 
 ### 7.1. Component Descriptions
 
-*   **BabaYagaClient:** The main entry point for the user. It provides a TUI for interacting with the system, configuring audits, and viewing results.
+*   **Web3AuditClient:** The main entry point for the user. It provides a TUI for interacting with the system, configuring audits, and viewing results.
 *   **OrchestrationLayer:** The brain of the system. It takes an audit configuration, runs the appropriate analysis modules, and aggregates the results into a single report.
 *   **AnalysisModule:** A wrapper around a specific analysis tool (e.g., Slither). It exposes a standardized interface for the OrchestrationLayer to use.
 *   **Report:** A data structure that holds the findings of an audit. It is designed to be easily converted into various formats (e.g., Markdown, JSON).
@@ -95,13 +95,13 @@ graph TD
 
 ## 8. Getting Started
 
-To get started with BabaYaga, you will need to have Python 3.12+, Node 22+, and Docker installed. You will also need to have `uv` installed for Python package management.
+To get started with Web3AuditMCP, you will need to have Python 3.12+, Node 22+, and Docker installed. You will also need to have `uv` installed for Python package management.
 
 1.  **Clone the repository:**
 
     ```bash
     git clone <repository_url>
-    cd BabaYaga
+    cd Web3AuditMCP
     ```
 
 2.  **Install dependencies:**
@@ -113,12 +113,12 @@ To get started with BabaYaga, you will need to have Python 3.12+, Node 22+, and 
 3.  **Run the client:**
 
     ```bash
-    babayaga
+    web3audit-mcp
     ```
 
 ## 9. Configuration
 
-BabaYaga is configured through a combination of command-line arguments and a future configuration file (e.g., `config.toml`).
+Web3AuditMCP is configured through a combination of command-line arguments and a future configuration file (e.g., `config.toml`).
 
 ### 9.1. `pyproject.toml`
 
@@ -143,14 +143,14 @@ Audit configurations will be defined in a separate configuration file. This will
 To run an audit, use the `audit` command followed by the target:
 
 ```bash
-babayaga audit <path_to_contract_or_repo>
+web3audit-mcp audit <path_to_contract_or_repo>
 ```
 
 This will trigger the OrchestrationLayer to run the configured analysis modules and generate a report.
 
 ## 11. Development
 
-Contributions to BabaYaga are welcome! To contribute, please follow these steps:
+Contributions to Web3AuditMCP are welcome! To contribute, please follow these steps:
 
 1.  Fork the repository.
 2.  Create a new branch for your feature or bug fix.

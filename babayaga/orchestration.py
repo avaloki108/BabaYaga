@@ -1,26 +1,34 @@
-"""Enhanced Orchestration Layer with Multi-Engine Integration."""
+"""
+Enhanced orchestration layer for BabaYaga Web3 security auditing.
+
+This module coordinates the entire audit workflow, integrating traditional tools
+with advanced AI analysis for comprehensive security assessment.
+"""
 
 import asyncio
 import json
-import os
 import time
-from typing import Dict, Any, List, Optional
 from pathlib import Path
-import logging
-
+from typing import Dict, List, Optional, Any, Tuple
+from dataclasses import dataclass, asdict
 from rich.console import Console
-from rich.panel import Panel
+from rich.progress import Progress, TaskID, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
-from rich.layout import Layout
+from rich.panel import Panel
 from rich.text import Text
-from rich.columns import Columns
 
+from .analysis_engine import AnalysisEngine
+from .agents.elite_agents import EliteAgentSystem
+from .llm.enhanced_client import EnhancedLLMClient, LLMResponse
+from .core.adapters import Finding, ProjectContext
+from .config.settings import Web3AuditConfig
+from .modules.slither_module import SlitherModule
+from .modules.mythril_module import MythrilModule
+from .modules.foundry_module import FoundryModule
 from .engines.advanced_engine import AdvancedSecurityEngine
 from .engines.fuzzing_engine import FuzzingEngine
 from .engines.static_engine import StaticAnalysisEngine
 from .agents.orchestrator import MultiAgentOrchestrator
-from .llm.enhanced_client import EnhancedLLMClient
 
 class EnhancedOrchestrationLayer:
     """

@@ -1,4 +1,4 @@
-"""Advanced analysis engine for BabaYaga."""
+"""Advanced analysis engine for Web3AuditMCP."""
 
 import json
 import asyncio
@@ -322,7 +322,7 @@ class AnalysisEngine:
         
         return Panel(
             report_content,
-            title=f"[bold green]BabaYaga Report - {risk_level}[/bold green]",
+            title=f"[bold green]Web3AuditMCP Report - {risk_level}[/bold green]",
             border_style="bold green",
             expand=False
         )

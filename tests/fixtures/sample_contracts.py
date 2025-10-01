@@ -1,4 +1,4 @@
-"""Sample smart contracts for testing BabaYaga."""
+"""Sample smart contracts for testing Web3AuditMCP."""
 
 # Vulnerable contract with multiple security issues
 VULNERABLE_CONTRACT = '''

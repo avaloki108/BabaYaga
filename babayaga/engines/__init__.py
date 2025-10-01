@@ -1,4 +1,4 @@
-"""Enhanced security analysis engines for BabaYaga."""
+"""Enhanced security analysis engines for Web3AuditMCP."""
 
 from .advanced_engine import AdvancedSecurityEngine
 from .fuzzing_engine import FuzzingEngine
