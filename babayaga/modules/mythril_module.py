@@ -1,4 +1,4 @@
-"""Advanced Mythril integration module for Web3AuditMCP."""
+"""Advanced Mythril integration module for BabaYaga."""
 
 import json
 import subprocess

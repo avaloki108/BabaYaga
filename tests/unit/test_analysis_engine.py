@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import Mock, AsyncMock, patch
 from rich.console import Console
 
-from web3audit_mcp.analysis_engine import AnalysisEngine, VulnerabilityCheck
+from babayaga.analysis_engine import AnalysisEngine, VulnerabilityCheck
 
 
 class TestVulnerabilityCheck:

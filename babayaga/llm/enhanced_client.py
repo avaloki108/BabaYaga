@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.progress import Progress, TaskID
 
 from ..core.adapters import Finding
-from ..config.settings import Web3AuditConfig
+from ..config.settings import BabaYagaConfig
 
 @dataclass
 class LLMResponse:
@@ -162,7 +162,7 @@ Include specific library recommendations (OpenZeppelin, etc.) and explain trade-
 class EnhancedLLMClient:
     """Enhanced LLM client with specialized security analysis capabilities."""
     
-    def __init__(self, config: Web3AuditConfig, console: Console):
+    def __init__(self, config: BabaYagaConfig, console: Console):
         self.config = config
         self.console = console
         self.base_url = "http://localhost:11434"  # Ollama default
