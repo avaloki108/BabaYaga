@@ -81,7 +81,7 @@ foundryup
 
 # Install and setup Ollama
 curl -fsSL https://ollama.ai/install.sh | sh
-ollama pull qwen2.5-coder:7b
+ollama pull gpt-oss:20b
 ollama pull llama3.1:8b
 ```
 
@@ -165,7 +165,7 @@ BabaYaga uses TOML configuration files located at `~/.babayaga/config.toml`:
 version = "1.0.0"
 
 [model]
-default_model = "qwen2.5-coder:7b"
+default_model = "gpt-oss:20b"
 temperature = 0.7
 top_p = 0.9
 max_tokens = 2000
