@@ -19,7 +19,8 @@ BabaYaga is a comprehensive, AI-powered smart contract security auditing platfor
 ### 🔧 Comprehensive Tool Integration
 - **Slither**: Advanced static analysis with custom detectors
 - **Mythril**: Symbolic execution and vulnerability detection
-- **Foundry**: Fuzzing and property-based testing
+- **Echidna**: Native property-based fuzzing (no external binary required)
+- **Foundry**: Additional fuzzing and testing support
 - **Custom Analyzers**: Pattern-based vulnerability detection
 
 ### 📊 Advanced Reporting

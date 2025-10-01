@@ -18,6 +18,8 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeEl
 from rich.panel import Panel
 from rich.table import Table
 
+from babayaga.modules.echidna_test import EchidnaFuzzer, FuzzingConfig as NativeEchidnaConfig
+
 @dataclass
 class FuzzingResult:
     """Fuzzing result with comprehensive metadata."""
@@ -54,9 +56,12 @@ class FuzzingEngine:
         self.console = console
         self.logger = logging.getLogger(__name__)
         
+        # Initialize native Echidna fuzzer
+        self.native_echidna = EchidnaFuzzer(console)
+        
         # Tool availability
         self.tools_available = {
-            'echidna': self._check_echidna(),
+            'echidna': True,  # Native implementation always available
             'medusa': self._check_medusa(),
             'fuzz_utils': self._check_fuzz_utils(),
             'foundry': self._check_foundry()
@@ -67,13 +72,8 @@ class FuzzingEngine:
         self.generated_tests: List[str] = []
         
     def _check_echidna(self) -> bool:
-        """Check if Echidna is available."""
-        try:
-            result = subprocess.run(['echidna', '--version'], 
-                                  capture_output=True, text=True, timeout=10)
-            return result.returncode == 0
-        except (subprocess.TimeoutExpired, FileNotFoundError):
-            return False
+        """Check if Echidna is available (native implementation always available)."""
+        return True  # Native implementation is always available
     
     def _check_medusa(self) -> bool:
         """Check if Medusa is available."""
@@ -226,74 +226,34 @@ class FuzzingEngine:
     
     def _run_echidna_fuzzing(self, target_path: str, work_dir: Path, config: Dict[str, Any], 
                             progress: Progress, task_id: int) -> FuzzingResult:
-        """Run Echidna fuzzing campaign."""
+        """Run Echidna fuzzing campaign using native implementation."""
         
         try:
             progress.update(task_id, advance=10)
             
-            # Create Echidna configuration
+            # Create Echidna configuration for native fuzzer
             echidna_config = self._create_echidna_config(config)
-            config_file = work_dir / 'echidna.yaml'
-            
-            with open(config_file, 'w') as f:
-                yaml.dump(echidna_config, f)
             
             progress.update(task_id, advance=20)
             
-            # Prepare Echidna command
-            cmd = [
-                'echidna', target_path,
-                '--config', str(config_file),
-                '--format', 'json'
-            ]
-            
-            # Add contract name if specified
-            if 'contract_name' in config:
-                cmd.extend(['--contract', config['contract_name']])
+            # Run native Echidna fuzzer
+            self.console.print("[cyan]Running native Echidna fuzzer...[/cyan]")
             
             progress.update(task_id, advance=10)
             
-            # Run Echidna
-            start_time = asyncio.get_event_loop().time()
-            
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=config.get('echidna_timeout', 300),
-                cwd=work_dir
+            # Execute fuzzing with native implementation
+            native_result = self.native_echidna.fuzz_contract(
+                target_path,
+                config_overrides=echidna_config
             )
-            
-            end_time = asyncio.get_event_loop().time()
-            execution_time = end_time - start_time
             
             progress.update(task_id, advance=40)
             
-            # Parse results
-            if result.stdout:
-                try:
-                    echidna_data = json.loads(result.stdout)
-                    return self._parse_echidna_results(echidna_data, execution_time)
-                except json.JSONDecodeError:
-                    pass
+            # Convert native result to FuzzingResult format
+            return self._convert_native_echidna_result(native_result)
             
-            # Fallback parsing for text output
-            return self._parse_echidna_text_output(result.stdout, result.stderr, execution_time)
-            
-        except subprocess.TimeoutExpired:
-            return FuzzingResult(
-                tool='echidna',
-                status='timeout',
-                properties_tested=0,
-                properties_failed=0,
-                coverage_percentage=0.0,
-                execution_time=config.get('echidna_timeout', 300),
-                gas_usage={},
-                failing_sequences=[],
-                corpus_size=0,
-                error_message='Fuzzing timed out'
-            )
         except Exception as e:
+            self.logger.error(f"Native Echidna fuzzing failed: {e}")
             return FuzzingResult(
                 tool='echidna',
                 status='error',
@@ -479,8 +439,47 @@ class FuzzingEngine:
             }
         }
     
+    def _convert_native_echidna_result(self, native_result) -> FuzzingResult:
+        """Convert native Echidna result to FuzzingResult format."""
+        
+        properties_tested = len(native_result.properties)
+        properties_failed = sum(1 for p in native_result.properties if p.status.value == 'failed')
+        has_errors = any(p.status.value == 'error' for p in native_result.properties)
+        
+        # Extract coverage percentage
+        coverage_percentage = native_result.coverage.get('percentage', 0.0)
+        
+        # Extract failing sequences
+        failing_sequences = []
+        for prop in native_result.properties:
+            if prop.status.value == 'failed' and prop.counterexample:
+                failing_sequences.append({
+                    'property': prop.name,
+                    'transactions': [tx.to_dict() for tx in prop.counterexample]
+                })
+        
+        # Determine overall status
+        if has_errors:
+            status = 'error'
+        elif properties_failed == 0:
+            status = 'passed'
+        else:
+            status = 'failed'
+        
+        return FuzzingResult(
+            tool='echidna',
+            status=status,
+            properties_tested=properties_tested,
+            properties_failed=properties_failed,
+            coverage_percentage=coverage_percentage,
+            execution_time=native_result.execution_time,
+            gas_usage=native_result.gas_statistics,
+            failing_sequences=failing_sequences,
+            corpus_size=native_result.corpus_size
+        )
+    
     def _parse_echidna_results(self, data: Dict[str, Any], execution_time: float) -> FuzzingResult:
-        """Parse Echidna JSON results."""
+        """Parse Echidna JSON results (legacy method for compatibility)."""
         
         tests = data.get('tests', [])
         properties_tested = len(tests)
