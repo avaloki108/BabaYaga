@@ -8,9 +8,9 @@ from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock
 from rich.console import Console
 
-from web3audit_mcp.orchestration import OrchestrationLayer
-from web3audit_mcp.analysis_engine import AnalysisEngine
-from web3audit_mcp.client import Web3AuditClient
+from babayaga.orchestration import OrchestrationLayer
+from babayaga.analysis_engine import AnalysisEngine
+from babayaga.client import BabaYagaClient
 
 
 class TestAuditWorkflow:
@@ -237,7 +237,7 @@ contract VulnerableContractTest is Test {
         # Mock Ollama client
         mock_ollama = Mock()
         
-        client = Web3AuditClient()
+        client = BabaYagaClient()
         client.ollama = mock_ollama
         client.console = console
         

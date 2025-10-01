@@ -1,4 +1,4 @@
-"""Advanced Slither integration module for Web3AuditMCP."""
+"""Advanced Slither integration module for BabaYaga."""
 
 import json
 import subprocess

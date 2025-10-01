@@ -1,4 +1,4 @@
-# Web3AuditMCP - Enhanced Smart Contract Security Auditing Platform
+# BabaYaga - Enhanced Smart Contract Security Auditing Platform
 # Multi-stage Docker build for optimized production deployment
 
 # Stage 1: Base system with dependencies
@@ -85,12 +85,12 @@ COPY . .
 RUN uv pip install --system -e .
 
 # Create non-root user for security
-RUN useradd -m -s /bin/bash web3audit && \
-    chown -R web3audit:web3audit /app
+RUN useradd -m -s /bin/bash babayaga && \
+    chown -R babayaga:babayaga /app
 
 # Create necessary directories
 RUN mkdir -p /app/data /app/logs /app/config && \
-    chown -R web3audit:web3audit /app/data /app/logs /app/config
+    chown -R babayaga:babayaga /app/data /app/logs /app/config
 
 # Copy configuration files
 COPY docker/config/ /app/config/
@@ -112,7 +112,7 @@ RUN cat > /app/start.sh << 'EOF'
 #!/bin/bash
 set -e
 
-echo "🚀 Starting Web3AuditMCP..."
+echo "🚀 Starting BabaYaga..."
 
 # Start Ollama service in background
 echo "Starting Ollama service..."
@@ -137,7 +137,7 @@ slither --version || echo "⚠️ Slither not available"
 myth version || echo "⚠️ Mythril not available"
 forge --version || echo "⚠️ Foundry not available"
 
-echo "✅ Web3AuditMCP ready!"
+echo "✅ BabaYaga ready!"
 
 # Start the main application
 exec "$@"
@@ -153,14 +153,14 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 EXPOSE 8000 11434
 
 # Set user
-USER web3audit
+USER babayaga
 
 # Default command
 ENTRYPOINT ["/app/start.sh"]
-CMD ["web3audit-mcp", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["babayaga", "--host", "0.0.0.0", "--port", "8000"]
 
 # Labels for metadata
-LABEL maintainer="Web3AuditMCP Team"
+LABEL maintainer="BabaYaga Team"
 LABEL version="1.0.0"
 LABEL description="Enhanced Smart Contract Security Auditing Platform"
-LABEL org.opencontainers.image.source="https://github.com/your-org/web3audit-mcp"
+LABEL org.opencontainers.image.source="https://github.com/your-org/babayaga"
