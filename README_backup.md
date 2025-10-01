@@ -237,8 +237,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links
 
 - [Documentation](docs/)
-- [Bug Reports](https://github.com/user/babayaga/issues)
-- [Feature Requests](https://github.com/user/babayaga/discussions)
+- [Bug Reports](https://github.com/avaloki108/BabaYaga/issues)
+- [Feature Requests](https://github.com/avaloki108/BabaYaga/discussions)
 - [Security Policy](SECURITY.md)
 
 ---
