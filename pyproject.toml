@@ -22,6 +22,7 @@ dependencies = [
     "typer[all]",
     "rich",
     "requests",
+    "httpx",
     "toml",
     "ollama",
     "watchdog",
@@ -34,7 +35,7 @@ Homepage = "https://github.com/avaloki108/BabaYaga"
 "Bug Tracker" = "https://github.com/avaloki108/BabaYaga/issues"
 
 [project.scripts]
-babayaga = "babayaga.cli.main:app"
+babayaga = "babayaga.cli:cli_entry_point"
 
 [project.optional-dependencies]
 dev = [
@@ -43,14 +44,17 @@ dev = [
     "pre-commit"
 ]
 test = [
-    "pytest"
+    "pytest",
+    "pytest-asyncio"
 ]
 # Full suite of optional security tools for comprehensive audits
 security = [
     "slither-analyzer",
+    "mythril",
     "echidna-test",
     "securify-2"
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["babayaga*"]
