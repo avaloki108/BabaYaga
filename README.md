@@ -1,8 +1,8 @@
-# Web3AuditMCP 🛡️
+# BabaYaga 🛡️
 
 **Enhanced Smart Contract Security Auditing Platform**
 
-Web3AuditMCP is a comprehensive, AI-powered smart contract security auditing platform that combines the best features of Slither, Mythril, Foundry fuzzing, and Hardhat checks with advanced multi-agent orchestration and LLM-enhanced analysis.
+BabaYaga is a comprehensive, AI-powered smart contract security auditing platform that combines the best features of Slither, Mythril, Foundry fuzzing, and Hardhat checks with advanced multi-agent orchestration and LLM-enhanced analysis.
 
 ## ✨ Features
 
@@ -49,8 +49,8 @@ Web3AuditMCP is a comprehensive, AI-powered smart contract security auditing pla
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/web3audit-mcp.git
-cd web3audit-mcp
+git clone https://github.com/your-org/babayaga.git
+cd babayaga
 
 # Run the installation wizard
 python install.py
@@ -89,8 +89,8 @@ ollama pull llama3.1:8b
 
 ```bash
 # Clone and start with Docker Compose
-git clone https://github.com/your-org/web3audit-mcp.git
-cd web3audit-mcp
+git clone https://github.com/your-org/babayaga.git
+cd babayaga
 
 # Start the full stack
 docker-compose up -d
@@ -103,21 +103,21 @@ open http://localhost:8000
 
 ```bash
 # Start the interactive client
-web3audit-mcp
+babayaga
 
 # Or run directly
-web3audit-mcp audit ./my-contract/
-web3audit-mcp quick MyContract.sol
+babayaga audit ./my-contract/
+babayaga quick MyContract.sol
 ```
 
 ## 📖 Usage Guide
 
 ### Interactive Client
 
-The Web3AuditMCP client provides a rich, interactive terminal interface:
+The BabaYaga client provides a rich, interactive terminal interface:
 
 ```bash
-web3audit-mcp
+babayaga
 ```
 
 **Available Commands:**
@@ -134,16 +134,16 @@ web3audit-mcp
 
 ```bash
 # Comprehensive audit
-web3audit-mcp audit ./contracts/
+babayaga audit ./contracts/
 
 # Quick scan
-web3audit-mcp quick MyContract.sol
+babayaga quick MyContract.sol
 
 # Audit with specific configuration
-web3audit-mcp audit ./project/ --config production
+babayaga audit ./project/ --config production
 
 # Export results
-web3audit-mcp export --format markdown --output report.md
+babayaga export --format markdown --output report.md
 ```
 
 ### Supported Targets
@@ -158,7 +158,7 @@ web3audit-mcp export --format markdown --output report.md
 
 ### Configuration File
 
-Web3AuditMCP uses TOML configuration files located at `~/.web3audit/config.toml`:
+BabaYaga uses TOML configuration files located at `~/.babayaga/config.toml`:
 
 ```toml
 [config]
@@ -188,8 +188,8 @@ log_level = "INFO"
 ### Environment Variables
 
 ```bash
-export WEB3AUDIT_CONFIG_PATH="/path/to/config.toml"
-export WEB3AUDIT_LOG_LEVEL="DEBUG"
+export BABAYAGA_CONFIG_PATH="/path/to/config.toml"
+export BABAYAGA_LOG_LEVEL="DEBUG"
 export OLLAMA_HOST="localhost:11434"
 ```
 
@@ -197,13 +197,13 @@ export OLLAMA_HOST="localhost:11434"
 
 ```bash
 # List available models
-web3audit-mcp model list
+babayaga model list
 
 # Download new model
-web3audit-mcp model pull qwen2.5-coder:14b
+babayaga model pull qwen2.5-coder:14b
 
 # Set default model
-web3audit-mcp model select
+babayaga model select
 ```
 
 ## 🔍 Analysis Capabilities
@@ -233,7 +233,7 @@ web3audit-mcp model select
 
 ### Security Checklist Integration
 
-Web3AuditMCP includes a comprehensive security checklist covering:
+BabaYaga includes a comprehensive security checklist covering:
 
 - **Access Management (AM)**: 15+ checks
 - **Arithmetic (AR)**: 10+ checks  
@@ -295,8 +295,8 @@ Web3AuditMCP includes a comprehensive security checklist covering:
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/web3audit-mcp.git
-cd web3audit-mcp
+git clone https://github.com/your-org/babayaga.git
+cd babayaga
 
 # Configure environment
 cp .env.example .env
@@ -311,7 +311,7 @@ docker-compose ps
 
 ### Services Included
 
-- **Web3AuditMCP**: Main application
+- **BabaYaga**: Main application
 - **PostgreSQL**: Audit history storage
 - **Redis**: Caching and sessions
 - **Nginx**: Reverse proxy and SSL
@@ -332,8 +332,8 @@ Access monitoring dashboards:
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/web3audit-mcp.git
-cd web3audit-mcp
+git clone https://github.com/your-org/babayaga.git
+cd babayaga
 
 # Create virtual environment
 python -m venv venv
@@ -352,8 +352,8 @@ pytest tests/
 ### Project Structure
 
 ```
-web3audit-mcp/
-├── web3audit_mcp/           # Main package
+babayaga/
+├── babayaga/           # Main package
 │   ├── agents/              # Multi-agent system
 │   ├── core/                # Core adapters and utilities
 │   ├── llm/                 # LLM integration
@@ -373,7 +373,7 @@ web3audit-mcp/
 pytest
 
 # Run with coverage
-pytest --cov=web3audit_mcp
+pytest --cov=babayaga
 
 # Run specific test categories
 pytest tests/unit/
@@ -431,7 +431,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-Web3AuditMCP builds upon the excellent work of:
+BabaYaga builds upon the excellent work of:
 
 - **[Slither](https://github.com/crytic/slither)** - Static analysis framework
 - **[Mythril](https://github.com/ConsenSys/mythril)** - Symbolic execution engine
@@ -455,6 +455,6 @@ Web3AuditMCP builds upon the excellent work of:
 
 ---
 
-**Made with ❤️ by the Web3AuditMCP Team**
+**Made with ❤️ by the BabaYaga Team**
 
 *Securing the decentralized future, one smart contract at a time.*

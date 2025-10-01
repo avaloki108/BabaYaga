@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime
 
 from ..core.adapters import Finding, AnalyzerAdapter, AdapterRegistry
-from ..config.settings import Web3AuditConfig
+from ..config.settings import BabaYagaConfig
 
 @dataclass
 class AgentTask:
@@ -54,7 +54,7 @@ class AgentResult:
 class AnalysisAgent:
     """Base class for specialized analysis agents."""
     
-    def __init__(self, agent_type: str, console: Console, config: Web3AuditConfig):
+    def __init__(self, agent_type: str, console: Console, config: BabaYagaConfig):
         self.agent_type = agent_type
         self.console = console
         self.config = config
@@ -110,7 +110,7 @@ class AnalysisAgent:
 class VulnerabilityDetectorAgent(AnalysisAgent):
     """Agent specialized in detecting common vulnerabilities."""
     
-    def __init__(self, console: Console, config: Web3AuditConfig, adapter_registry: AdapterRegistry):
+    def __init__(self, console: Console, config: BabaYagaConfig, adapter_registry: AdapterRegistry):
         super().__init__("vulnerability_detector", console, config)
         self.adapter_registry = adapter_registry
     
@@ -252,7 +252,7 @@ class VulnerabilityDetectorAgent(AnalysisAgent):
 class ExploitAnalyzerAgent(AnalysisAgent):
     """Agent specialized in analyzing exploit scenarios and attack vectors."""
     
-    def __init__(self, console: Console, config: Web3AuditConfig):
+    def __init__(self, console: Console, config: BabaYagaConfig):
         super().__init__("exploit_analyzer", console, config)
     
     def _define_capabilities(self) -> Set[str]:
@@ -337,7 +337,7 @@ class ExploitAnalyzerAgent(AnalysisAgent):
 class FixRecommenderAgent(AnalysisAgent):
     """Agent specialized in providing detailed fix recommendations."""
     
-    def __init__(self, console: Console, config: Web3AuditConfig):
+    def __init__(self, console: Console, config: BabaYagaConfig):
         super().__init__("fix_recommender", console, config)
     
     def _define_capabilities(self) -> Set[str]:
@@ -454,7 +454,7 @@ class FixRecommenderAgent(AnalysisAgent):
 class MultiAgentOrchestrator:
     """Orchestrates multiple analysis agents for comprehensive security auditing."""
     
-    def __init__(self, console: Console, config: Web3AuditConfig):
+    def __init__(self, console: Console, config: BabaYagaConfig):
         self.console = console
         self.config = config
         self.adapter_registry = AdapterRegistry(console)

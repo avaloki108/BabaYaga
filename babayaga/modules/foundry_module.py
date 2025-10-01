@@ -1,4 +1,4 @@
-"""Advanced Foundry integration module for Web3AuditMCP."""
+"""Advanced Foundry integration module for BabaYaga."""
 
 import json
 import subprocess
