@@ -248,7 +248,7 @@ class FoundryModule:
         try:
             # Look for invariant test files
             test_files = list(Path('.').rglob('*Invariant*.sol'))
-            test_files.extend(list(Path('.').rglob('*Property*.sol'))
+            test_files.extend(list(Path('.').rglob('*Property*.sol')))
             
             if test_files:
                 result = subprocess.run([
