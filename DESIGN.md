@@ -93,6 +93,103 @@ graph TD
 
 
 
+## 8. Configuration
+
+BabaYaga is configured through a combination of command-line arguments and a future configuration file (e.g., `config.toml`).
+
+### 8.1. `pyproject.toml`
+
+The `pyproject.toml` file defines the project's dependencies and metadata. The key dependencies are:
+
+*   `ollama`: For interacting with the Ollama API.
+*   `typer`: For creating the command-line interface.
+*   `rich`: For creating the rich terminal user interface.
+*   `prompt-toolkit`: For the interactive prompt.
+
+### 8.2. Audit Configuration
+
+Audit configurations will be defined in a separate configuration file. This will allow users to specify:
+
+*   The target smart contract or repository.
+*   The analysis modules to run.
+*   The parameters for each analysis module.
+*   The desired output format for the report.
+
+## 9. Usage
+
+To run an audit, use the `audit` command followed by the target:
+
+```bash
+babayaga audit <path_to_contract_or_repo>
+```
+
+This will trigger the OrchestrationLayer to run the configured analysis modules and generate a report.
+
+## 10. Development
+
+Contributions to BabaYaga are welcome! To contribute, please follow these steps:
+
+1.  Fork the repository.
+2.  Create a new branch for your feature or bug fix.
+3.  Make your changes and write tests.
+4.  Submit a pull request.
+*   `analyze(target: str, config: dict) -> dict:`: Analyzes the specified target (e.g., a smart contract file or a Git repository) with the given configuration. Returns a dictionary of findings.
+
+## 5. Implementation Plan
+
+The development of BabaYaga will be divided into the following phases:
+
+1.  **Phase 1: Core Implementation (Current Focus)**
+    *   Implement the core Orchestration Layer.
+    *   Develop the Configuration Manager.
+    *   Create the initial version of the Ollama Client.
+2.  **Phase 2: Module Integration**
+    *   Integrate Slither as the first analysis module.
+    *   Integrate Mythril for symbolic execution.
+    *   Integrate Foundry for fuzzing.
+3.  **Phase 3: Reporting and Documentation**
+    *   Implement the Reporting Engine.
+    *   Write comprehensive documentation for users and developers.
+4.  **Phase 4: Testing and Refinement**
+    *   Develop a comprehensive test suite.
+    *   Refine the system based on user feedback and testing results.
+
+## 6. Next Steps
+
+The immediate next step is to begin the implementation of the core components as outlined in Phase 1 of the implementation plan. This will involve creating the initial directory structure, setting up the project, and implementing the basic functionality of the Orchestration Layer, Configuration Manager, and Ollama Client.
+
+
+
+
+## 7. Detailed Architecture
+
+The following diagram illustrates the high-level architecture of BabaYaga:
+
+```mermaid
+graph TD
+    A[BabaYagaClient] --> B{OrchestrationLayer};
+    B --> C[AnalysisModule: Slither];
+    B --> D[AnalysisModule: Mythril];
+    B --> E[AnalysisModule: Foundry];
+    C --> F[Report];
+    D --> F[Report];
+    E --> F[Report];
+    B --> F;
+    F --> A;
+    G[ConfigurationManager] --> B;
+    A --> G;
+```
+
+### 7.1. Component Descriptions
+
+*   **BabaYagaClient:** The main entry point for the user. It provides a TUI for interacting with the system, configuring audits, and viewing results.
+*   **OrchestrationLayer:** The brain of the system. It takes an audit configuration, runs the appropriate analysis modules, and aggregates the results into a single report.
+*   **AnalysisModule:** A wrapper around a specific analysis tool (e.g., Slither). It exposes a standardized interface for the OrchestrationLayer to use.
+*   **Report:** A data structure that holds the findings of an audit. It is designed to be easily converted into various formats (e.g., Markdown, JSON).
+*   **ConfigurationManager:** Responsible for loading, saving, and managing all configurations for the system, including audit plans, tool settings, and model parameters.
+
+
+
 ## 8. Getting Started
 
 To get started with BabaYaga, you will need to have Python 3.12+, Node 22+, and Docker installed. You will also need to have `uv` installed for Python package management.
