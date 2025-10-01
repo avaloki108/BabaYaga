@@ -14,6 +14,26 @@ This document summarizes all changes made during the comprehensive repository re
 
 ## 🔧 Critical Fixes Applied
 
+### 0. CLI Entry Point Properly Implemented ✅
+**Date:** October 2024
+**Files:** `babayaga/cli/main.py` (new), `babayaga/cli/__init__.py` (new), `pyproject.toml`, `babayaga/orchestration.py`
+
+**Changes Made:**
+1. Created proper `babayaga/cli/` package structure
+2. Created `babayaga/cli/main.py` with callable `app()` function
+3. Updated entry point to `babayaga = "babayaga.cli.main:app"` (as originally intended)
+4. Fixed unused import (`ProjectContext`) in `orchestration.py` that was blocking module imports
+
+```diff
+[project.scripts]
+- babayaga = "babayaga.cli:cli_entry_point"
++ babayaga = "babayaga.cli.main:app"
+```
+
+**Impact:** CLI entry point now works with the intended module structure. The `app` object is callable and properly integrated into the package hierarchy.
+
+---
+
 ### 1. Syntax Error in Foundry Module ✅
 **File:** `babayaga/modules/foundry_module.py`  
 **Line:** 251

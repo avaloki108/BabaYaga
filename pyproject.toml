@@ -36,7 +36,7 @@ Homepage = "https://github.com/avaloki108/BabaYaga"
 "Bug Tracker" = "https://github.com/avaloki108/BabaYaga/issues"
 
 [project.scripts]
-babayaga = "babayaga.cli:cli_entry_point"
+babayaga = "babayaga.cli.main:app"
 
 [project.optional-dependencies]
 dev = [
