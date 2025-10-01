@@ -20,6 +20,8 @@ from rich.panel import Panel
 # Import new project modules
 from babayaga.project.detector import detect_project_type
 from babayaga.project.builder import ProjectBuilder
+from babayaga.llm.enhanced_client import EnhancedLLMClient, LLMResponse
+from babayaga.config.settings import BabaYagaConfig, ConfigManager
 
 # Assuming these paths will be updated as we build out the new structure
 try:
@@ -55,6 +57,14 @@ class Orchestrator:
         self.run_id = time.strftime("%Y%m%d-%H%M%S")
         self.artifacts_dir = Path("artifacts") / self.run_id
         self._setup_directories()
+
+        # Load BabaYaga configuration
+        self.config_manager = ConfigManager(console)
+        self.babayaga_config = self.config_manager.load_config()
+        
+        # Initialize LLM client for Ollama oversight
+        self.llm_client = EnhancedLLMClient(self.babayaga_config, console)
+        console.print(f"[cyan]🧠 Ollama oversight enabled with model: {self.babayaga_config.model.default_model}[/cyan]")
 
         # Initialize engines from the original orchestration logic
         self.advanced_engine = AdvancedSecurityEngine(console)
@@ -173,16 +183,22 @@ class Orchestrator:
 
         # Consolidate findings from this phase
         static_findings = engine_results.get('static', {}).get('findings', [])
-        self.findings.extend(static_findings)
+        
+        # 🧠 OLLAMA OVERSIGHT: Analyze findings with LLM
+        console.print("\n[cyan]🧠 Ollama analyzing static findings...[/cyan]")
+        llm_enhanced_findings = await self._llm_analyze_findings(static_findings)
+        self.findings.extend(llm_enhanced_findings)
         
         self.run_results['phases']['phase_1'] = {'status': 'completed', 'results': engine_results}
-        self._save_artifacts('phase_1_recon_findings.json', static_findings)
+        self._save_artifacts('phase_1_recon_findings.json', self.findings)
         return True
 
     async def _run_phase_2_vulnerability_hunting(self) -> bool:
         """Phase 2: Vulnerability Hunting using Fuzzing and AI Agents."""
         console.print("\n[bold yellow]PHASE 2: Vulnerability Hunting[/bold yellow]")
         phase_results = {}
+        new_findings = []
+        
         # Fuzzing
         if not self.config.get('fuzzing', {}).get('skip', False):
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), BarColumn(), TimeElapsedColumn(), console=console) as progress:
@@ -192,9 +208,29 @@ class Orchestrator:
                     phase_results['fuzzing'] = fuzz_results
                     progress.update(fuzz_task, completed=100)
                     console.print("[green]✅ Fuzzing complete.[/green]")
+                    
+                    # Extract findings from fuzzing results
+                    for tool_result in fuzz_results.get('tool_results', []):
+                        if tool_result.get('properties_failed', 0) > 0:
+                            finding = {
+                                'id': f"fuzzing_{tool_result['tool']}_failure",
+                                'title': f"Fuzzing Failure - {tool_result['tool'].title()}",
+                                'description': f"{tool_result['properties_failed']} properties failed during fuzzing",
+                                'severity': 'High',
+                                'confidence': 0.9,
+                                'tool': tool_result['tool'],
+                                'category': 'fuzzing'
+                            }
+                            new_findings.append(finding)
                 except Exception as e:
                     logger.error(f"Fuzzing failed: {e}", exc_info=True)
                     console.print(f"[red]❌ Fuzzing failed: {e}[/red]")
+        
+        # 🧠 OLLAMA OVERSIGHT: Analyze fuzzing findings with LLM
+        if new_findings:
+            console.print("\n[cyan]🧠 Ollama analyzing fuzzing findings...[/cyan]")
+            llm_enhanced_findings = await self._llm_analyze_findings(new_findings)
+            self.findings.extend(llm_enhanced_findings)
         
         # AI Agent Enhancement
         console.print("[yellow]🤖 Enhancing analysis with AI agents...[/yellow]")
@@ -212,6 +248,77 @@ class Orchestrator:
         self.run_results['phases']['phase_2'] = {'status': 'completed', 'results': phase_results}
         self._save_artifacts('phase_2_hunt_results.json', phase_results)
         return True
+
+    async def _llm_analyze_findings(self, findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Use Ollama to analyze and enhance security findings."""
+        from ..core.adapters import Finding
+        
+        enhanced_findings = []
+        
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            task = progress.add_task(f"Ollama analyzing {len(findings)} findings...", total=len(findings))
+            
+            for i, finding_dict in enumerate(findings):
+                try:
+                    # Convert dict to Finding object
+                    finding_obj = Finding(
+                        id=finding_dict.get('id', f'finding_{i}'),
+                        tool=finding_dict.get('tool', 'unknown'),
+                        rule_id=finding_dict.get('rule_id', 'unknown'),
+                        title=finding_dict.get('title', 'Unknown'),
+                        description=finding_dict.get('description', ''),
+                        severity=finding_dict.get('severity', 'medium'),
+                        confidence=finding_dict.get('confidence', 0.7),
+                        files=finding_dict.get('files', []),
+                        trace=finding_dict.get('trace', []),
+                        tool_output=finding_dict.get('tool_output', ''),
+                        checks=finding_dict.get('checks', []),
+                        recommendation=finding_dict.get('recommendation', '')
+                    )
+                    
+                    # Only analyze high/critical severity with full LLM
+                    if finding_dict.get('severity', '').lower() in ['critical', 'high']:
+                        llm_response = await self.llm_client.analyze_vulnerability(finding_obj)
+                        
+                        # Enhance finding with LLM insights
+                        enhanced_finding = self.llm_client.enhance_finding_with_llm(finding_obj, llm_response)
+                        enhanced_dict = {
+                            'id': enhanced_finding.id,
+                            'title': enhanced_finding.title,
+                            'description': enhanced_finding.description,
+                            'severity': enhanced_finding.severity,
+                            'confidence': enhanced_finding.confidence,
+                            'tool': enhanced_finding.tool,
+                            'category': finding_dict.get('category', 'unknown'),
+                            'recommendation': enhanced_finding.recommendation,
+                            'llm_enhanced': True,
+                            'llm_model': self.babayaga_config.model.default_model
+                        }
+                    else:
+                        # For lower severity, just add LLM observation flag
+                        enhanced_dict = finding_dict.copy()
+                        enhanced_dict['llm_observed'] = True
+                        enhanced_dict['llm_model'] = self.babayaga_config.model.default_model
+                    
+                    enhanced_findings.append(enhanced_dict)
+                    progress.update(task, advance=1)
+                    
+                except Exception as e:
+                    logger.error(f"LLM analysis failed for finding {i}: {e}")
+                    # Keep original finding even if LLM fails
+                    finding_dict['llm_error'] = str(e)
+                    enhanced_findings.append(finding_dict)
+                    progress.update(task, advance=1)
+                
+                # Small delay to prevent overwhelming Ollama
+                await asyncio.sleep(0.2)
+        
+        console.print(f"[green]✅ Ollama analyzed {len(enhanced_findings)} findings[/green]")
+        return enhanced_findings
 
     def _integrate_agent_results(self, agent_results: Dict[str, Any]):
         """Integrates insights from AI agents back into the main findings list."""
