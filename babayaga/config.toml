@@ -1,0 +1,89 @@
+# BabaYaga Comprehensive Configuration
+
+# -----------------------------------------------------------------------------
+# ELITE AUDIT SETTINGS
+# Configures the advanced, persistent vulnerability hunting mode.
+# -----------------------------------------------------------------------------
+[elite]
+# Minimum score (Novelty × Exploitability × Impact) to report a finding.
+minimum_score_threshold = 200
+
+# Findings with a score above this are considered highly significant.
+conference_worthy_threshold = 500
+
+# Maximum number of parallel analysis agents to run during an elite hunt.
+max_parallel_agents = 10
+
+# Default setting for stealth mode to reduce operational noise.
+stealth_mode_default = true
+
+# Default setting for persistence mode to continue hunting until quality thresholds are met.
+persistence_mode_default = true
+
+# Enables the generation of novel attack vectors by AI agents.
+enable_novel_attack_generation = true
+
+
+# -----------------------------------------------------------------------------
+# MODEL CONFIGURATION
+# Defines distinct models for different tasks (analysis, reasoning, etc.).
+# -----------------------------------------------------------------------------
+[models]
+# Primary model for general analysis and coordination.
+primary_model = "qwen2.5-coder:32b"
+
+# Fallback model to use if the primary model fails.
+fallback_model = "llama3.1:70b"
+
+# Specialized model for deep code analysis and understanding.
+code_model = "mradermacher/DeepHat-V1-7B-GGUF"
+
+# High-capability model for logical reasoning, validation, and synthesis.
+reasoning_model = "gpt-4o"
+
+# Default model provider (e.g., "ollama", "openai", "anthropic").
+provider = "ollama"
+
+# Model-specific parameters
+temperature = 0.1
+max_tokens = 4096
+context_window = 32768
+
+
+# -----------------------------------------------------------------------------
+# SECURITY TOOLCHAIN
+# Enable or disable specific security tools integrated into the audit process.
+# -----------------------------------------------------------------------------
+[security_tools]
+# Crytic Suite
+slither_enabled = true
+echidna_enabled = true
+medusa_enabled = true
+
+# Other Web3 Tools
+securify2_enabled = true
+foundry_enabled = true
+
+# General Purpose Security Tools
+nuclei_enabled = true
+
+
+# -----------------------------------------------------------------------------
+# OUTPUT & REPORTING
+# Configure the format and content of audit reports.
+# -----------------------------------------------------------------------------
+[output]
+# Default format for console output (e.g., "rich_console", "json", "text").
+default_format = "rich_console"
+
+# Available formats for exporting the final report. PDF is a future goal.
+export_formats = ["json", "markdown", "html"] # "pdf" coming soon
+
+# Include a generated Proof of Concept in the report.
+include_proof_of_concept = true
+
+# Include remediation advice in the report.
+include_remediation = true
+
+# Include an analysis of the potential economic impact.
+include_economic_impact = true
