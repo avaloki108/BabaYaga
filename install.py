@@ -34,10 +34,10 @@ class BabaYagaInstaller:
         req_table.add_column("Details", style="dim")
         
         # Python version check
-        if self.python_version >= (3, 8):
-            req_table.add_row("Python 3.8+", "[green]✅ PASS[/green]", f"Found {sys.version}")
+        if self.python_version >= (3, 12):
+            req_table.add_row("Python 3.12+", "[green]✅ PASS[/green]", f"Found {sys.version}")
         else:
-            req_table.add_row("Python 3.8+", "[red]❌ FAIL[/red]", f"Found {sys.version}")
+            req_table.add_row("Python 3.12+", "[red]❌ FAIL[/red]", f"Found {sys.version}, but 3.12+ is required.")
             self.requirements_met = False
         
         # Node.js check
@@ -45,27 +45,27 @@ class BabaYagaInstaller:
         if node_version:
             req_table.add_row("Node.js", "[green]✅ PASS[/green]", node_version.strip())
         else:
-            req_table.add_row("Node.js", "[yellow]⚠️ MISSING[/yellow]", "Required for some tools")
+            req_table.add_row("Node.js", "[yellow]⚠️ MISSING[/yellow]", "Required for Hardhat integration.")
         
         # Docker check
         docker_version = self._check_command("docker --version")
         if docker_version:
             req_table.add_row("Docker", "[green]✅ PASS[/green]", docker_version.strip())
         else:
-            req_table.add_row("Docker", "[yellow]⚠️ MISSING[/yellow]", "Optional for containerized analysis")
+            req_table.add_row("Docker", "[yellow]⚠️ MISSING[/yellow]", "Optional for containerized deployment.")
         
         # Git check
         git_version = self._check_command("git --version")
         if git_version:
             req_table.add_row("Git", "[green]✅ PASS[/green]", git_version.strip())
         else:
-            req_table.add_row("Git", "[red]❌ MISSING[/red]", "Required for repository analysis")
+            req_table.add_row("Git", "[red]❌ MISSING[/red]", "Required for repository analysis.")
             self.requirements_met = False
         
         console.print(req_table)
         
         if not self.requirements_met:
-            console.print("\n[red]❌ Some requirements are not met. Please install missing dependencies.[/red]")
+            console.print("\n[red]❌ Some requirements are not met. Please install missing dependencies and try again.[/red]")
             return False
         
         console.print("\n[green]✅ All requirements satisfied![/green]")
@@ -78,9 +78,10 @@ class BabaYagaInstaller:
                 command.split(),
                 capture_output=True,
                 text=True,
+                check=False,
                 timeout=10
             )
-            return result.stdout if result.returncode == 0 else None
+            return result.stdout.strip() if result.returncode == 0 else None
         except (subprocess.TimeoutExpired, FileNotFoundError):
             return None
     
@@ -95,231 +96,180 @@ class BabaYagaInstaller:
             console=console
         ) as progress:
             
-            # Check if uv is available
-            task = progress.add_task("Checking package managers...", total=None)
+            task = progress.add_task("Detecting package manager...", total=None)
             
-            uv_available = self._check_command("uv --version")
-            
-            if uv_available:
-                progress.update(task, description="Installing with uv (fast)...")
-                install_cmd = ["uv", "pip", "install", "-e", "."]
+            # Check for uv
+            if self._check_command("uv --version"):
+                progress.update(task, description="Installing with uv (recommended)...")
+                install_cmd = ["uv", "pip", "install", "-e", ".[dev,test,security]"]
             else:
                 progress.update(task, description="Installing with pip...")
-                install_cmd = [sys.executable, "-m", "pip", "install", "-e", "."]
+                install_cmd = [sys.executable, "-m", "pip", "install", "-e", ".[dev,test,security]"]
             
             try:
                 result = subprocess.run(
                     install_cmd,
                     capture_output=True,
                     text=True,
-                    cwd=Path(__file__).parent
+                    cwd=Path(__file__).parent,
+                    check=False
                 )
                 
                 if result.returncode == 0:
-                    progress.update(task, description="✅ Python dependencies installed")
-                    console.print("[green]✅ Python dependencies installed successfully[/green]")
+                    progress.update(task, completed=True, description="✅ Python dependencies installed.")
+                    console.print("[green]✅ Python dependencies installed successfully.[/green]")
+                    return True
                 else:
-                    console.print(f"[red]❌ Installation failed: {result.stderr}[/red]")
+                    progress.update(task, completed=True, description="❌ Python dependencies installation failed.")
+                    console.print(f"[red]❌ Installation failed:\n{result.stderr}[/red]")
                     return False
                     
             except Exception as e:
-                console.print(f"[red]❌ Installation error: {e}[/red]")
+                console.print(f"[red]❌ An unexpected error occurred: {e}[/red]")
                 return False
-        
-        return True
     
     def install_security_tools(self):
-        """Install security analysis tools."""
+        """Install security analysis tools like Foundry and Hardhat."""
         
-        console.print("\n[bold]🛠️ Installing Security Analysis Tools[/bold]")
+        console.print("\n[bold]🛠️ Installing Additional Security Tools[/bold]")
         
-        tools_to_install = []
-        
-        # Check which tools need installation
-        if not self._check_command("slither --version"):
-            tools_to_install.append(("Slither", "pip install slither-analyzer"))
-        
-        if not self._check_command("myth --version"):
-            tools_to_install.append(("Mythril", "pip install mythril"))
-        
+        # Foundry installation
         if not self._check_command("forge --version"):
-            tools_to_install.append(("Foundry", self._get_foundry_install_cmd()))
-        
-        if not tools_to_install:
-            console.print("[green]✅ All security tools already installed[/green]")
-            return True
-        
-        # Install missing tools
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
-        ) as progress:
-            
-            for tool_name, install_cmd in tools_to_install:
-                task = progress.add_task(f"Installing {tool_name}...", total=None)
-                
-                try:
-                    if tool_name == "Foundry":
-                        # Special handling for Foundry
-                        success = self._install_foundry()
-                    else:
-                        result = subprocess.run(
-                            install_cmd.split(),
-                            capture_output=True,
-                            text=True,
-                            timeout=300  # 5 minutes timeout
-                        )
-                        success = result.returncode == 0
-                    
-                    if success:
-                        progress.update(task, description=f"✅ {tool_name} installed")
-                    else:
-                        progress.update(task, description=f"❌ {tool_name} failed")
-                        console.print(f"[yellow]⚠️ {tool_name} installation failed. You can install it manually later.[/yellow]")
-                        
-                except Exception as e:
-                    console.print(f"[yellow]⚠️ {tool_name} installation error: {e}[/yellow]")
-        
-        return True
-    
-    def _get_foundry_install_cmd(self):
-        """Get the appropriate Foundry installation command."""
-        if self.system == "linux" or self.system == "darwin":
-            return "curl -L https://foundry.paradigm.xyz | bash"
+            if Confirm.ask("\nFoundry not found. Install Foundry?", default=True):
+                self._install_foundry()
         else:
-            return "# Manual installation required for Windows"
-    
+            console.print("[green]✅ Foundry is already installed.[/green]")
+            
+        # Hardhat installation (optional, if Node.js is present)
+        if self._check_command("node --version"):
+            if not self._check_command("hardhat --version"):
+                 if Confirm.ask("\nHardhat not found. Install Hardhat globally?", default=True):
+                    self._install_hardhat()
+            else:
+                console.print("[green]✅ Hardhat is already installed.[/green]")
+
     def _install_foundry(self):
-        """Install Foundry using the official installer."""
+        """Install Foundry using the official script."""
+        console.print("Installing Foundry...")
+        if self.system not in ["linux", "darwin"]:
+            console.print("[yellow]⚠️ Automated Foundry installation is not supported on Windows.[/yellow]")
+            console.print("Please install it manually from: https://getfoundry.sh")
+            return
+
+        if not self._check_command("curl --version"):
+            console.print("[red]❌ `curl` is required to install Foundry. Please install it and try again.[/red]")
+            return
+
         try:
-            if self.system == "windows":
-                console.print("[yellow]⚠️ Foundry installation on Windows requires manual setup[/yellow]")
-                console.print("Please visit: https://book.getfoundry.sh/getting-started/installation")
-                return False
-            
-            # Download and run Foundry installer
-            install_script = subprocess.run([
-                "curl", "-L", "https://foundry.paradigm.xyz"
-            ], capture_output=True, text=True, timeout=60)
-            
-            if install_script.returncode == 0:
-                # Run the installer
-                result = subprocess.run([
-                    "bash", "-c", install_script.stdout
-                ], capture_output=True, text=True, timeout=300)
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
+                task = progress.add_task("Running Foundry installer...", total=None)
                 
-                return result.returncode == 0
-            
-            return False
-            
-        except Exception:
-            return False
-    
+                # The official installer script handles `foundryup` itself.
+                cmd = "curl -L https://foundry.paradigm.xyz | bash && source ~/.bashrc && foundryup"
+                
+                # Using shell=True is necessary for piping and subsequent commands.
+                # Ensure security implications are understood for public scripts.
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
+
+                if result.returncode == 0 and "foundryup" in result.stdout:
+                    progress.update(task, completed=True, description="✅ Foundry installed successfully.")
+                    console.print("[green]✅ Foundry installed. You may need to restart your terminal to use the `forge` command.[/green]")
+                else:
+                    progress.update(task, completed=True, description="❌ Foundry installation failed.")
+                    console.print(f"[red]❌ Foundry installation failed:\n{result.stderr}[/red]")
+        except Exception as e:
+            console.print(f"[red]❌ An error occurred during Foundry installation: {e}[/red]")
+
+    def _install_hardhat(self):
+        """Install Hardhat globally using npm."""
+        console.print("Installing Hardhat...")
+        if not self._check_command("npm --version"):
+            console.print("[red]❌ `npm` is required to install Hardhat. Please install Node.js and npm, then try again.[/red]")
+            return
+
+        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
+            task = progress.add_task("npm install -g hardhat", total=None)
+            try:
+                result = subprocess.run(["npm", "install", "-g", "hardhat"], capture_output=True, text=True, check=False)
+                if result.returncode == 0:
+                    progress.update(task, completed=True, description="✅ Hardhat installed successfully.")
+                else:
+                    progress.update(task, completed=True, description="❌ Hardhat installation failed.")
+                    console.print(f"[red]❌ Hardhat installation failed:\n{result.stderr}[/red]")
+            except Exception as e:
+                console.print(f"[red]❌ An error occurred during Hardhat installation: {e}[/red]")
+
     def setup_ollama(self):
         """Setup Ollama for LLM integration."""
         
         console.print("\n[bold]🧠 Setting up Ollama (LLM Integration)[/bold]")
         
-        # Check if Ollama is already installed
         if self._check_command("ollama --version"):
-            console.print("[green]✅ Ollama already installed[/green]")
-            
-            if Confirm.ask("Download recommended models?", default=True):
-                self._download_recommended_models()
-            
-            return True
-        
-        # Install Ollama
-        console.print("Installing Ollama...")
-        
-        try:
-            if self.system == "linux" or self.system == "darwin":
-                install_cmd = "curl -fsSL https://ollama.ai/install.sh | sh"
-                result = subprocess.run(
-                    ["bash", "-c", install_cmd],
-                    capture_output=True,
-                    text=True,
-                    timeout=300
-                )
-                
-                if result.returncode == 0:
-                    console.print("[green]✅ Ollama installed successfully[/green]")
-                    
-                    # Start Ollama service
-                    subprocess.run(["ollama", "serve"], timeout=5)
-                    
-                    if Confirm.ask("Download recommended models?", default=True):
-                        self._download_recommended_models()
-                    
-                    return True
-                else:
-                    console.print(f"[red]❌ Ollama installation failed: {result.stderr}[/red]")
-                    return False
+            console.print("[green]✅ Ollama is already installed.[/green]")
+        else:
+            console.print("Ollama not found. Attempting to install...")
+            if self.system in ["linux", "darwin"]:
+                if not self._check_command("curl --version"):
+                    console.print("[red]❌ `curl` is required to install Ollama. Please install it and try again.[/red]")
+                    return
+                try:
+                    cmd = "curl -fsSL https://ollama.ai/install.sh | sh"
+                    subprocess.run(cmd, shell=True, check=True)
+                    console.print("[green]✅ Ollama installed successfully.[/green]")
+                    console.print("Please ensure the Ollama application is running before using BabaYaga.")
+                except Exception as e:
+                    console.print(f"[red]❌ Ollama installation failed: {e}[/red]")
+                    console.print("Please install it manually from: https://ollama.ai/download")
+                    return
             else:
-                console.print("[yellow]⚠️ Please install Ollama manually on Windows[/yellow]")
-                console.print("Visit: https://ollama.ai/download")
-                return False
-                
-        except Exception as e:
-            console.print(f"[red]❌ Ollama installation error: {e}[/red]")
-            return False
+                console.print("[yellow]⚠️ Please install Ollama manually on Windows from: https://ollama.ai/download[/yellow]")
+                return
+        
+        if self._check_command("ollama --version") and Confirm.ask("\nDownload recommended AI models?", default=True):
+            self._download_recommended_models()
     
     def _download_recommended_models(self):
         """Download recommended AI models."""
         
         recommended_models = [
-            "qwen2.5-coder:7b",  # Good for code analysis
-            "llama3.1:8b",       # General purpose
-            "codellama:7b"       # Code-specific
+            "qwen2.5-coder:7b",
+            "llama3.1:8b",
+            "codellama:7b"
         ]
         
-        console.print("\n[bold]📥 Downloading Recommended Models[/bold]")
+        console.print("\n[bold]📥 Downloading Recommended Models[/bold] (this may take a while)...")
         
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
-        ) as progress:
-            
-            for model in recommended_models:
-                task = progress.add_task(f"Downloading {model}...", total=None)
-                
+        for model in recommended_models:
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
+                task = progress.add_task(f"Pulling {model}...", total=None)
                 try:
-                    result = subprocess.run(
-                        ["ollama", "pull", model],
-                        capture_output=True,
-                        text=True,
-                        timeout=600  # 10 minutes per model
-                    )
-                    
+                    result = subprocess.run(["ollama", "pull", model], capture_output=True, text=True, check=False, timeout=600)
                     if result.returncode == 0:
-                        progress.update(task, description=f"✅ {model} downloaded")
+                        progress.update(task, completed=True, description=f"✅ {model} downloaded.")
                     else:
-                        progress.update(task, description=f"❌ {model} failed")
-                        
+                        progress.update(task, completed=True, description=f"❌ Failed to download {model}.")
+                        console.print(f"[yellow]Warning: Could not download {model}. You can pull it manually later.[/yellow]")
+                except subprocess.TimeoutExpired:
+                    progress.update(task, completed=True, description=f"❌ Timeout downloading {model}.")
+                    console.print(f"[red]Error: Timeout while trying to download {model}.[/red]")
                 except Exception as e:
-                    console.print(f"[yellow]⚠️ Model {model} download failed: {e}[/yellow]")
+                    console.print(f"[red]An error occurred while downloading {model}: {e}[/red]")
     
     def create_config(self):
         """Create initial configuration."""
         
-        console.print("\n[bold]⚙️ Creating Configuration[/bold]")
+        console.print("\n[bold]⚙️ Creating Default Configuration[/bold]")
         
         config_dir = Path.home() / ".babayaga"
         config_dir.mkdir(exist_ok=True)
-        
         config_file = config_dir / "config.toml"
         
         if config_file.exists():
-            if not Confirm.ask("Configuration exists. Overwrite?", default=False):
-                return True
+            if not Confirm.ask(f"Configuration file already exists at {config_file}. Overwrite?", default=False):
+                console.print("[yellow]Skipping configuration creation.[/yellow]")
+                return
         
-        # Create default configuration
-        default_config = '''[config]
-version = "1.0.0"
-
-[model]
+        default_config = """[model]
 default_model = "qwen2.5-coder:7b"
 temperature = 0.7
 top_p = 0.9
@@ -329,6 +279,7 @@ max_tokens = 2000
 slither_enabled = true
 mythril_enabled = true
 foundry_enabled = true
+hardhat_enabled = true # Set to false if you don't use Hardhat
 
 [audit]
 parallel_execution = true
@@ -338,23 +289,16 @@ export_format = "json"
 [output]
 console_style = "rich"
 log_level = "INFO"
-'''
-        
+"""
         try:
-            with open(config_file, 'w') as f:
-                f.write(default_config)
-            
-            console.print(f"[green]✅ Configuration created at: {config_file}[/green]")
-            return True
-            
+            config_file.write_text(default_config)
+            console.print(f"[green]✅ Default configuration created at: {config_file}[/green]")
         except Exception as e:
-            console.print(f"[red]❌ Configuration creation failed: {e}[/red]")
-            return False
+            console.print(f"[red]❌ Failed to create configuration file: {e}[/red]")
     
     def run_installation(self):
         """Run the complete installation process."""
         
-        # Display banner
         banner = """
 ╦ ╦┌─┐┌┐ ╔═╗╔═╗┬ ┬┌┬┐┬┌┬┐╔╦╗╔═╗╔═╗
 ║║║├┤ ├┴┐╠═╣║ ║ ║ │││ │ ║║║║ ║╠═╝
@@ -369,52 +313,38 @@ Enhanced Smart Contract Security Auditing Platform
             border_style="green"
         ))
         
-        # Step 1: Check requirements
         if not self.check_requirements():
-            return False
+            return
         
-        # Step 2: Install Python dependencies
         if not self.install_python_dependencies():
-            return False
-        
-        # Step 3: Install security tools
-        if Confirm.ask("\nInstall security analysis tools (Slither, Mythril, Foundry)?", default=True):
-            self.install_security_tools()
-        
-        # Step 4: Setup Ollama
-        if Confirm.ask("\nSetup Ollama for AI-enhanced analysis?", default=True):
-            self.setup_ollama()
-        
-        # Step 5: Create configuration
+            return
+
+        self.install_security_tools()
+        self.setup_ollama()
         self.create_config()
         
-        # Installation complete
         console.print("\n" + "="*60)
         console.print(Panel(
             "[bold green]🎉 Installation Complete![/bold green]\n\n"
             "[bold]Next Steps:[/bold]\n"
-            "1. Run: [cyan]babayaga[/cyan] to start the client\n"
-            "2. Try: [cyan]babayaga audit ./my-contract/[/cyan]\n"
-            "3. Check status: [cyan]babayaga status[/cyan]\n\n"
-            "[dim]For help: babayaga --help[/dim]",
-            title="🛡️ BabaYaga Ready",
+            "1. Run `babayaga` to start the interactive client.\n"
+            "2. Try an audit: `babayaga audit ./path/to/contract`\n"
+            "3. Check system status: `babayaga status`\n\n"
+            "[dim]For more commands, use: `babayaga --help`[/dim]",
+            title="🛡️ BabaYaga is Ready",
             border_style="green"
         ))
-        
-        return True
 
 def main():
     """Main installation entry point."""
     installer = BabaYagaInstaller()
-    
     try:
-        success = installer.run_installation()
-        sys.exit(0 if success else 1)
+        installer.run_installation()
     except KeyboardInterrupt:
-        console.print("\n[yellow]Installation cancelled by user[/yellow]")
+        console.print("\n\n[yellow]Installation cancelled by user.[/yellow]")
         sys.exit(1)
     except Exception as e:
-        console.print(f"\n[red]Installation failed: {e}[/red]")
+        console.print(f"\n[bold red]An unexpected error occurred during installation: {e}[/bold red]")
         sys.exit(1)
 
 if __name__ == "__main__":
