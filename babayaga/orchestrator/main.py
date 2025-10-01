@@ -22,6 +22,7 @@ from babayaga.project.detector import detect_project_type
 from babayaga.project.builder import ProjectBuilder
 from babayaga.llm.enhanced_client import EnhancedLLMClient, LLMResponse
 from babayaga.config.settings import BabaYagaConfig, ConfigManager
+from babayaga.core.adapters import Finding
 
 # Assuming these paths will be updated as we build out the new structure
 try:
@@ -251,8 +252,6 @@ class Orchestrator:
 
     async def _llm_analyze_findings(self, findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Use Ollama to analyze and enhance security findings."""
-        from ..core.adapters import Finding
-        
         enhanced_findings = []
         
         with Progress(
