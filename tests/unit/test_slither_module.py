@@ -7,7 +7,7 @@ import json
 from unittest.mock import Mock, patch, MagicMock
 from rich.console import Console
 
-from web3audit_mcp.modules.slither_module import SlitherModule
+from babayaga.modules.slither_module import SlitherModule
 
 
 class TestSlitherModule:

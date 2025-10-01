@@ -21,7 +21,7 @@ from .analysis_engine import AnalysisEngine
 from .agents.elite_agents import EliteAgentSystem
 from .llm.enhanced_client import EnhancedLLMClient, LLMResponse
 from .core.adapters import Finding, ProjectContext
-from .config.settings import Web3AuditConfig
+from .config.settings import BabaYagaConfig
 from .modules.slither_module import SlitherModule
 from .modules.mythril_module import MythrilModule
 from .modules.foundry_module import FoundryModule

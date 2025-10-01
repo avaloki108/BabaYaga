@@ -49,7 +49,7 @@ BabaYaga is a comprehensive, AI-powered smart contract security auditing platfor
 
 ```bash
 # Clone the repository
-git clone https://github.com/avaloki108/babayaga.git
+git clone https://github.com/avaloki108/BabaYaga.git
 cd babayaga
 
 # Run the installation wizard
@@ -89,7 +89,7 @@ ollama pull llama3.1:8b
 
 ```bash
 # Clone and start with Docker Compose
-git clone https://github.com/avaloki108/babayaga.git
+git clone https://github.com/avaloki108/BabaYaga.git
 cd babayaga
 
 # Start the full stack
@@ -188,8 +188,8 @@ log_level = "INFO"
 ### Environment Variables
 
 ```bash
-export WEB3AUDIT_CONFIG_PATH="/path/to/config.toml"
-export WEB3AUDIT_LOG_LEVEL="DEBUG"
+export BABAYAGA_CONFIG_PATH="/path/to/config.toml"
+export BABAYAGA_LOG_LEVEL="DEBUG"
 export OLLAMA_HOST="localhost:11434"
 ```
 
@@ -295,7 +295,7 @@ BabaYaga includes a comprehensive security checklist covering:
 
 ```bash
 # Clone repository
-git clone https://github.com/avaloki108/babayaga.git
+git clone https://github.com/avaloki108/BabaYaga.git
 cd babayaga
 
 # Configure environment
@@ -332,7 +332,7 @@ Access monitoring dashboards:
 
 ```bash
 # Clone repository
-git clone https://github.com/avaloki108/babayaga.git
+git clone https://github.com/avaloki108/BabaYaga.git
 cd babayaga
 
 # Create virtual environment

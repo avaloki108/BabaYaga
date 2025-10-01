@@ -17,7 +17,7 @@ try:
     from .agents.orchestrator import MultiAgentOrchestrator
     from .llm.enhanced_client import EnhancedLLMClient
     from .core.adapters import AdapterRegistry, Finding
-    from .config.settings import Web3AuditConfig, ConfigManager
+    from .config.settings import BabaYagaConfig, ConfigManager
 except ImportError:
     # Fallback imports for development
     from .analysis_engine import AnalysisEngine

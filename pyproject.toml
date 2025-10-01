@@ -3,15 +3,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "web3audit-mcp"
+name = "babayaga"
 version = "0.1.0"
 description = "Comprehensive smart contract auditing tool powered by local LLMs"
 readme = "README.md"
 authors = [
-    {name = "Web3AuditMCP Team", email = "team@web3audit-mcp.com"}
+    {name = "BabaYaga Team", email = "team@babayaga.com"}
 ]
 maintainers = [
-    {name = "Web3AuditMCP Team", email = "team@web3audit-mcp.com"}
+    {name = "BabaYaga Team", email = "team@babayaga.com"}
 ]
 keywords = [
     "smart-contracts",
@@ -75,9 +75,9 @@ security = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/user/web3audit-mcp"
-Repository = "https://github.com/user/web3audit-mcp.git"
-"Bug Tracker" = "https://github.com/user/web3audit-mcp/issues"
+Homepage = "https://github.com/avaloki108/BabaYaga"
+Repository = "https://github.com/avaloki108/BabaYaga.git"
+"Bug Tracker" = "https://github.com/avaloki108/BabaYaga/issues"
 
 [project.scripts]
 babayaga = "babayaga.cli:cli_entry_point"
@@ -85,7 +85,7 @@ baba = "babayaga.cli:cli_entry_point"
 babayaga-config = "babayaga.config.setup_cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["web3audit_mcp"]
+packages = ["babayaga"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -93,7 +93,7 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--cov=web3audit_mcp",
+    "--cov=babayaga",
     "--cov-report=term-missing"
 ]
 testpaths = ["tests"]
@@ -103,7 +103,7 @@ python_functions = ["test_*"]
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-source = ["web3audit_mcp"]
+source = ["babayaga"]
 omit = [
     "*/tests/*",
     "*/test_*",

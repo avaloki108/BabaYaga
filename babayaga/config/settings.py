@@ -1,4 +1,4 @@
-"""Configuration settings for Web3AuditMCP."""
+"""Configuration settings for BabaYaga."""
 
 import os
 from pathlib import Path
@@ -66,8 +66,8 @@ class UIConfig:
     color_system: str = "auto"
 
 @dataclass
-class Web3AuditConfig:
-    """Main configuration class for Web3AuditMCP."""
+class BabaYagaConfig:
+    """Main configuration class for BabaYaga."""
     model: ModelConfig
     tools: ToolConfig
     audit: AuditConfig
@@ -83,14 +83,14 @@ class ConfigManager:
     
     def __init__(self, console: Optional[Console] = None):
         self.console = console or Console()
-        self.config_dir = Path.home() / ".web3audit-mcp"
+        self.config_dir = Path.home() / ".babayaga"
         self.config_file = self.config_dir / "config.toml"
-        self.config: Optional[Web3AuditConfig] = None
+        self.config: Optional[BabaYagaConfig] = None
         
         # Ensure config directory exists
         self.config_dir.mkdir(exist_ok=True)
     
-    def load_config(self) -> Web3AuditConfig:
+    def load_config(self) -> BabaYagaConfig:
         """Load configuration from file or create default."""
         if self.config_file.exists():
             try:
@@ -107,7 +107,7 @@ class ConfigManager:
                 global_settings = {k: v for k, v in config_data.items() 
                                  if k not in ['model', 'tools', 'audit', 'ui']}
                 
-                self.config = Web3AuditConfig(
+                self.config = BabaYagaConfig(
                     model=model_config,
                     tools=tools_config,
                     audit=audit_config,
@@ -128,9 +128,9 @@ class ConfigManager:
         
         return self.config
     
-    def _create_default_config(self) -> Web3AuditConfig:
+    def _create_default_config(self) -> BabaYagaConfig:
         """Create default configuration."""
-        return Web3AuditConfig(
+        return BabaYagaConfig(
             model=ModelConfig(),
             tools=ToolConfig(
                 slither_detectors=[],
@@ -168,7 +168,7 @@ class ConfigManager:
             self.console.print(f"[red]❌ Error saving config: {e}[/red]")
             return False
     
-    def get_config(self) -> Web3AuditConfig:
+    def get_config(self) -> BabaYagaConfig:
         """Get current configuration, loading if necessary."""
         if not self.config:
             self.load_config()
@@ -262,7 +262,7 @@ class ConfigManager:
             global_settings = {k: v for k, v in config_data.items() 
                              if k not in ['model', 'tools', 'audit', 'ui']}
             
-            self.config = Web3AuditConfig(
+            self.config = BabaYagaConfig(
                 model=model_config,
                 tools=tools_config,
                 audit=audit_config,
