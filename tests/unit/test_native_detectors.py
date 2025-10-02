@@ -11,6 +11,10 @@ from babayaga.native.detector_registry import DetectorRegistry
 from babayaga.native.slither_detectors.reentrancy import ReentrancyDetector
 from babayaga.native.slither_detectors.tx_origin import TxOriginDetector
 from babayaga.native.slither_detectors.unchecked_call import UncheckedCallDetector
+from babayaga.native.slither_detectors.integer_overflow import IntegerOverflowDetector
+from babayaga.native.slither_detectors.timestamp_dependence import TimestampDependenceDetector
+from babayaga.native.slither_detectors.block_hash_usage import BlockHashUsageDetector
+from babayaga.native.slither_detectors.access_control import AccessControlDetector
 
 
 class TestBaseDetector:
@@ -276,6 +280,194 @@ class TestUncheckedCallDetector:
         
         findings = await detector.analyze(safe_code, "test.sol")
         
+        assert len(findings) == 0
+
+
+class TestIntegerOverflowDetector:
+    """Test integer overflow detector."""
+    
+    @pytest.mark.asyncio
+    async def test_detector_metadata(self):
+        """Test integer overflow detector metadata."""
+        detector = IntegerOverflowDetector()
+        metadata = detector.get_metadata()
+        
+        assert metadata.detector_id == "native-integer-overflow"
+        assert metadata.source_tool == "slither"
+        assert metadata.swc_id == "SWC-101"
+    
+    @pytest.mark.asyncio
+    async def test_detect_unsafe_arithmetic(self):
+        """Test detecting unsafe arithmetic operations."""
+        detector = IntegerOverflowDetector()
+        
+        # Contract with unsafe arithmetic
+        vulnerable_code = """
+        pragma solidity ^0.7.0;
+        contract Vulnerable {
+            uint256 public balance;
+            
+            function addBalance(uint256 amount) public {
+                balance += amount;
+            }
+        }
+        """
+        
+        findings = await detector.analyze(vulnerable_code, "test.sol")
+        
+        assert len(findings) >= 1
+        assert "overflow" in findings[0].title.lower()
+    
+    @pytest.mark.asyncio
+    async def test_no_detection_safe_version(self):
+        """Test that safe Solidity version doesn't trigger detector."""
+        detector = IntegerOverflowDetector()
+        
+        # Safe contract with Solidity 0.8.0+
+        safe_code = """
+        pragma solidity ^0.8.0;
+        contract Safe {
+            uint256 public balance;
+            
+            function addBalance(uint256 amount) public {
+                balance += amount;  // Safe in 0.8.0+
+            }
+        }
+        """
+        
+        findings = await detector.analyze(safe_code, "test.sol")
+        
+        # Should not detect issues in 0.8.0+
+        assert len(findings) == 0
+
+
+class TestTimestampDependenceDetector:
+    """Test timestamp dependence detector."""
+    
+    @pytest.mark.asyncio
+    async def test_detector_metadata(self):
+        """Test timestamp dependence detector metadata."""
+        detector = TimestampDependenceDetector()
+        metadata = detector.get_metadata()
+        
+        assert metadata.detector_id == "native-timestamp-dependence"
+        assert metadata.source_tool == "slither"
+        assert metadata.swc_id == "SWC-116"
+    
+    @pytest.mark.asyncio
+    async def test_detect_timestamp_usage(self):
+        """Test detecting dangerous timestamp usage."""
+        detector = TimestampDependenceDetector()
+        
+        # Contract using timestamp for critical logic
+        vulnerable_code = """
+        contract Vulnerable {
+            uint256 public deadline;
+            
+            function checkDeadline() public view returns (bool) {
+                require(block.timestamp < deadline, "Expired");
+                return true;
+            }
+        }
+        """
+        
+        findings = await detector.analyze(vulnerable_code, "test.sol")
+        
+        assert len(findings) >= 1
+        assert "timestamp" in findings[0].title.lower()
+
+
+class TestBlockHashUsageDetector:
+    """Test block hash usage detector."""
+    
+    @pytest.mark.asyncio
+    async def test_detector_metadata(self):
+        """Test block hash usage detector metadata."""
+        detector = BlockHashUsageDetector()
+        metadata = detector.get_metadata()
+        
+        assert metadata.detector_id == "native-block-hash-usage"
+        assert metadata.source_tool == "slither"
+        assert metadata.swc_id == "SWC-120"
+    
+    @pytest.mark.asyncio
+    async def test_detect_weak_randomness(self):
+        """Test detecting weak randomness."""
+        detector = BlockHashUsageDetector()
+        
+        # Contract using block properties for randomness
+        vulnerable_code = """
+        contract Vulnerable {
+            function random() public view returns (uint256) {
+                return uint256(blockhash(block.number - 1)) % 100;
+            }
+        }
+        """
+        
+        findings = await detector.analyze(vulnerable_code, "test.sol")
+        
+        assert len(findings) >= 1
+        assert "random" in findings[0].title.lower()
+
+
+class TestAccessControlDetector:
+    """Test access control detector."""
+    
+    @pytest.mark.asyncio
+    async def test_detector_metadata(self):
+        """Test access control detector metadata."""
+        detector = AccessControlDetector()
+        metadata = detector.get_metadata()
+        
+        assert metadata.detector_id == "native-access-control"
+        assert metadata.source_tool == "slither"
+        assert metadata.swc_id == "SWC-106"
+    
+    @pytest.mark.asyncio
+    async def test_detect_missing_access_control(self):
+        """Test detecting missing access control."""
+        detector = AccessControlDetector()
+        
+        # Contract with unprotected critical function
+        vulnerable_code = """
+        contract Vulnerable {
+            address public owner;
+            
+            function transferOwnership(address newOwner) public {
+                owner = newOwner;
+            }
+        }
+        """
+        
+        findings = await detector.analyze(vulnerable_code, "test.sol")
+        
+        assert len(findings) >= 1
+        assert "access control" in findings[0].title.lower()
+    
+    @pytest.mark.asyncio
+    async def test_no_detection_protected_function(self):
+        """Test that protected functions don't trigger detector."""
+        detector = AccessControlDetector()
+        
+        # Safe contract with access control
+        safe_code = """
+        contract Safe {
+            address public owner;
+            
+            modifier onlyOwner() {
+                require(msg.sender == owner);
+                _;
+            }
+            
+            function transferOwnership(address newOwner) public onlyOwner {
+                owner = newOwner;
+            }
+        }
+        """
+        
+        findings = await detector.analyze(safe_code, "test.sol")
+        
+        # Should not detect issues when protected
         assert len(findings) == 0
 
 

@@ -24,16 +24,16 @@ babayaga/native/
 │   ├── reentrancy.py
 │   ├── tx_origin.py
 │   └── unchecked_call.py
-├── mythril_detectors/        # Native Mythril symbolic execution detectors
-│   ├── symbolic_engine.py   # Z3-based symbolic execution engine
-│   ├── integer_overflow.py  # SWC-101: Integer overflow/underflow
-│   ├── reentrancy.py        # SWC-107: Reentrancy
-│   ├── unchecked_call.py    # SWC-104: Unchecked call return
-│   ├── unprotected_ether.py # SWC-105: Unprotected ether withdrawal
-│   ├── unprotected_selfdestruct.py  # SWC-106: Unprotected selfdestruct
-│   └── tx_origin.py         # SWC-115: tx.origin authentication
-├── medusa_detectors/         # Native Medusa implementations (planned)
-└── securify2_detectors/      # Native Securify2 implementations (planned)
+├── securify2_detectors/      # Native Securify2 implementations
+│   ├── integer_overflow.py
+│   ├── uninitialized_storage.py
+│   ├── missing_access_control.py
+│   ├── timestamp_dependence.py
+│   ├── unsafe_delegatecall.py
+│   ├── unprotected_selfdestruct.py
+│   └── locked_ether.py
+├── mythril_detectors/        # Native Mythril implementations (planned)
+└── medusa_detectors/         # Native Medusa implementations (planned)
 ```
 
 ## Using Native Analysis
@@ -65,31 +65,6 @@ config = {
 result = await engine.analyze_project("./contracts/", config)
 ```
 
-## Implemented Detectors
-
-### Slither-Based Detectors
-
-| Detector ID | Name | SWC | Severity |
-|------------|------|-----|----------|
-| `native-reentrancy-eth` | Reentrancy Vulnerability | SWC-107 | High |
-| `native-tx-origin` | Dangerous tx.origin Usage | SWC-115 | Medium |
-| `native-unchecked-call` | Unchecked External Call | SWC-104 | Medium |
-
-### Mythril-Based Detectors (Symbolic Execution)
-
-| Detector ID | Name | SWC | Severity |
-|------------|------|-----|----------|
-| `native-mythril-integer-overflow` | Integer Overflow/Underflow | SWC-101 | High |
-| `native-mythril-reentrancy` | Reentrancy (Symbolic) | SWC-107 | High |
-| `native-mythril-unchecked-call` | Unchecked Call (Symbolic) | SWC-104 | Medium |
-| `native-mythril-unprotected-ether` | Unprotected Ether Withdrawal | SWC-105 | High |
-| `native-mythril-unprotected-selfdestruct` | Unprotected Selfdestruct | SWC-106 | Critical |
-| `native-mythril-tx-origin` | tx.origin Authentication (Symbolic) | SWC-115 | Medium |
-
-**Total Detectors**: 9 (3 Slither + 6 Mythril)
-
-See [NATIVE_MYTHRIL.md](../../docs/NATIVE_MYTHRIL.md) for detailed Mythril detector documentation.
-
 ### Detector Registry
 
 ```python
@@ -102,7 +77,6 @@ all_detectors = registry.get_all_detectors()
 
 # Get detectors from specific tool
 slither_detectors = registry.get_detectors_by_tool('slither')
-mythril_detectors = registry.get_detectors_by_tool('mythril')
 
 # Get version information
 version_info = registry.get_version_info()
@@ -211,6 +185,22 @@ engine.export_version_manifest('DETECTORS_MANIFEST.json')
 "
 ```
 
+## Implemented Detectors
+
+### Slither-Based Detectors
+- **Reentrancy Detection**: Detects reentrancy vulnerabilities (SWC-107)
+- **tx.origin Usage**: Detects dangerous use of tx.origin for authorization (SWC-115)
+- **Unchecked Calls**: Detects unchecked return values from low-level calls (SWC-104)
+
+### Securify2-Based Detectors (Datalog-Inspired)
+- **Integer Overflow/Underflow**: Detects unchecked arithmetic operations (SWC-101)
+- **Uninitialized Storage**: Detects uninitialized storage pointers (SWC-109)
+- **Missing Access Control**: Detects state-changing functions without access control (SWC-105)
+- **Timestamp Dependence**: Detects reliance on block.timestamp (SWC-116)
+- **Unsafe Delegatecall**: Detects delegatecall to untrusted addresses (SWC-112)
+- **Unprotected Selfdestruct**: Detects selfdestruct without access control (SWC-106)
+- **Locked Ether**: Detects contracts that can receive but not withdraw ether (SWC-132)
+
 ## Detector Categories
 
 - **REENTRANCY**: Reentrancy vulnerabilities
@@ -252,16 +242,29 @@ engine.export_version_manifest('DETECTORS_MANIFEST.json')
 - [x] Unchecked calls
 - [ ] Additional Slither detectors (see DETECTORS_MANIFEST.json)
 
-### Phase 2: Mythril Detectors
-- [ ] Integer overflow/underflow
-- [ ] Unprotected selfdestruct
+### Phase 2: Securify2 Detectors ✓
+- [x] Integer overflow/underflow detection
+- [x] Uninitialized storage pointer detection
+- [x] Missing access control detection
+- [x] Timestamp dependence detection
+- [x] Unsafe delegatecall detection
+- [x] Unprotected selfdestruct detection
+- [x] Locked ether detection
+- [ ] Additional Securify2 patterns (DAO vulnerability, unrestricted write, etc.)
+
+### Phase 3: Mythril Detectors
 - [ ] Delegatecall to untrusted callee
+- [ ] State change after external calls
 - [ ] Additional Mythril detectors
 
 ### Phase 3: Medusa & Securify2
-- [ ] Invariant checking (Medusa-style)
+- [x] Invariant checking (Medusa-style)
+  - [x] Conservation invariants (balance/supply tracking)
+  - [x] Permission invariants (access control)
+  - [x] Liveness invariants (state reachability)
+  - [x] Property violation detection
 - [ ] Datalog patterns (Securify2-style)
-- [ ] Property-based testing integration
+- [x] Property-based testing integration
 
 ### Phase 4: Advanced Features
 - [ ] AST-based analysis (more accurate than regex)
@@ -280,9 +283,98 @@ When adding new detectors:
 5. Document any patterns or limitations
 6. Cross-validate with upstream tool if possible
 
+## Medusa-Style Symbolic Analysis
+
+The native engine now includes Medusa-inspired symbolic analysis and invariant checking:
+
+### Conservation Invariants (`native-medusa-conservation`)
+
+Detects violations of conservation laws:
+- Balance conservation (sum of balances should not change unexpectedly)
+- Supply conservation (total supply tracking)
+- Token conservation (tokens shouldn't appear/disappear)
+
+**Example violation:**
+```solidity
+function mint(address to, uint256 amount) public {
+    balances[to] += amount;
+    // Missing: totalSupply += amount;
+}
+```
+
+### Permission Invariants (`native-medusa-permissions`)
+
+Detects missing or improper access control:
+- Critical functions without access control
+- Improper owner/admin checks
+- Unauthorized state modifications
+
+**Example violation:**
+```solidity
+function setOwner(address newOwner) public {
+    owner = newOwner;  // Missing: require(msg.sender == owner);
+}
+```
+
+### Liveness Invariants (`native-medusa-liveness`)
+
+Detects deadlocks and unreachable states:
+- Functions that always revert
+- Unreachable code paths
+- Stuck states
+
+**Example violation:**
+```solidity
+function withdraw() public {
+    require(paused == false);
+    require(balance > 0);
+    require(msg.sender == owner);
+    // If all three conditions are never true together, function is deadlocked
+}
+```
+
+### Property Violations (`native-medusa-properties`)
+
+Detects violations of custom properties:
+- echidna_* property functions
+- invariant_* functions
+- Custom assertions
+
+**Example property:**
+```solidity
+function echidna_balance_conservation() public view returns (bool) {
+    return totalSupply == sumOfBalances();
+}
+```
+
+## Symbolic Execution Engine
+
+The symbolic execution engine provides:
+- **Symbolic State Tracking**: Track possible states and constraints
+- **Path Exploration**: Explore execution paths symbolically
+- **Constraint Solving**: Identify satisfiable/unsatisfiable conditions
+- **Invariant Verification**: Check invariants across execution paths
+
+### Limitations
+
+- **Simplified SMT Solving**: Uses pattern matching instead of full SMT solver
+- **Limited Loop Unrolling**: Deep loops may not be fully analyzed
+- **Heuristic-Based**: Some checks use heuristics rather than complete symbolic analysis
+- **No External Calls**: External contract interactions are approximated
+
+### Future Enhancements
+
+- Integration with Z3 or other SMT solvers
+- More sophisticated path exploration strategies
+- Support for complex data structures (nested mappings, structs)
+- Cross-contract symbolic analysis
+- Temporal properties (LTL/CTL)
+
 ## Resources
 
 - **Slither Detectors**: https://github.com/crytic/slither/wiki/Detector-Documentation
 - **Mythril Docs**: https://mythril-classic.readthedocs.io/
+- **Medusa**: https://github.com/crytic/medusa
+- **Echidna**: https://github.com/crytic/echidna
 - **SWC Registry**: https://swcregistry.io/
 - **Smart Contract Best Practices**: https://consensys.github.io/smart-contract-best-practices/

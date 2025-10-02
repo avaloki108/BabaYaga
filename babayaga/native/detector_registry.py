@@ -123,19 +123,26 @@ class DetectorRegistry:
             return []
     
     async def run_all_detectors(self, contract_source: str, file_path: str, 
-                               only_enabled: bool = True, **kwargs) -> List[DetectorFinding]:
+                               only_enabled: bool = True, tool_filter: Optional[str] = None,
+                               **kwargs) -> List[DetectorFinding]:
         """Run all detectors on the given contract.
         
         Args:
             contract_source: Source code to analyze
             file_path: Path to source file
             only_enabled: Only run enabled detectors
+            tool_filter: Optional filter to run only detectors from specific tool
             **kwargs: Additional arguments for detectors
             
         Returns:
             Aggregated list of all findings
         """
         detectors = self.get_enabled_detectors() if only_enabled else self.get_all_detectors()
+        
+        # Apply tool filter if specified
+        if tool_filter:
+            detectors = [d for d in detectors if d.metadata.source_tool == tool_filter]
+        
         all_findings = []
         
         for detector in detectors:

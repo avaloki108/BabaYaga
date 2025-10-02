@@ -50,12 +50,10 @@ class ReentrancyDetector(BaseDetector):
         findings = []
         lines = contract_source.split('\n')
         
-        # Pattern matching for common reentrancy patterns
-        # This is a simplified version - a full implementation would use AST analysis
-        
         current_function = None
         external_call_line = None
         state_change_after_call = False
+        in_function = False
         
         for line_num, line in enumerate(lines, 1):
             line_stripped = line.strip()
@@ -76,24 +74,32 @@ class ReentrancyDetector(BaseDetector):
                     current_function = func_match.group(1)
                     external_call_line = None
                     state_change_after_call = False
+                    in_function = True
             
             # Detect external calls
-            if current_function and self._is_external_call(line_stripped):
+            if in_function and current_function and self._is_external_call(line_stripped):
                 external_call_line = line_num
                 state_change_after_call = False
             
             # Detect state changes after external call
-            if external_call_line and line_num > external_call_line:
+            if in_function and external_call_line and line_num > external_call_line:
                 if self._is_state_change(line_stripped):
                     state_change_after_call = True
-        
-        # Check last function
-        if current_function and external_call_line and state_change_after_call:
-            finding = self._create_finding(
-                current_function, external_call_line,
-                contract_source, file_path
-            )
-            findings.append(finding)
+            
+            # Detect end of function
+            if in_function and line_stripped == '}':
+                # Check if we found reentrancy in this function
+                if current_function and external_call_line and state_change_after_call:
+                    finding = self._create_finding(
+                        current_function, external_call_line,
+                        contract_source, file_path
+                    )
+                    findings.append(finding)
+                    # Reset for next function
+                    current_function = None
+                    external_call_line = None
+                    state_change_after_call = False
+                in_function = False
         
         return findings
     
@@ -101,35 +107,36 @@ class ReentrancyDetector(BaseDetector):
         """Check if line contains an external call."""
         # Common patterns for external calls
         patterns = [
-            r'\.call[\s\{]',  # .call( or .call{
-            r'\.delegatecall[\s\{]',
-            r'\.send\s*\(',
-            r'\.transfer\s*\(',
-            r'\w+\([^)]*\)\s*\.value\s*\(',
+            r'\.call\s*\{',         # New syntax: .call{value: ...}
+            r'\.call\s*\(',         # Old syntax: .call()
+            r'\.delegatecall\s*\{', # New syntax: .delegatecall{...}
+            r'\.delegatecall\s*\(', # Old syntax: .delegatecall()
+            r'\.send\s*\(',         # .send()
+            r'\.transfer\s*\(',     # .transfer()
+            r'\w+\([^)]*\)\s*\.value\s*\(', # .value(...) calls
         ]
         
         return any(re.search(pattern, line) for pattern in patterns)
     
     def _is_state_change(self, line: str) -> bool:
         """Check if line modifies state."""
+        # Exclude local variable declarations
+        if re.search(r'^\s*(uint|int|address|bool|string|bytes|mapping)', line):
+            return False
+        
         # Common patterns for state changes
         patterns = [
-            r'\w+\s*=\s*[^=]',  # Assignment
-            r'\w+\[.+\]\s*=',   # Array/mapping assignment
-            r'\w+\s*\+=',       # Addition assignment
-            r'\w+\s*-=',        # Subtraction assignment
-            r'\w+\s*\*=',       # Multiplication assignment
-            r'\w+\s*/=',        # Division assignment
-            r'\+\+\w+',         # Pre-increment
-            r'\w+\+\+',         # Post-increment
-            r'--\w+',           # Pre-decrement
-            r'\w+--',           # Post-decrement
-            r'delete\s+\w+',    # Delete operation
+            r'[\w\[\]\.]+\s*=\s*[^=]',  # Assignment (including array/mapping access)
+            r'\w+\s*\+=',                # Addition assignment
+            r'\w+\s*-=',                 # Subtraction assignment
+            r'\w+\s*\*=',                # Multiplication assignment
+            r'\w+\s*/=',                 # Division assignment
+            r'\+\+\w+',                  # Pre-increment
+            r'\w+\+\+',                  # Post-increment
+            r'--\w+',                    # Pre-decrement
+            r'\w+--',                    # Post-decrement
+            r'delete\s+\w+',             # Delete operation
         ]
-        
-        # Exclude local variable declarations
-        if re.search(r'^\s*(uint|int|address|bool|string|bytes)', line):
-            return False
         
         return any(re.search(pattern, line) for pattern in patterns)
     

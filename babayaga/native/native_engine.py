@@ -9,13 +9,28 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeEl
 
 from .detector_registry import get_registry, DetectorRegistry
 from .base_detector import DetectorFinding
-from .slither_detectors import ReentrancyDetector, TxOriginDetector, UncheckedCallDetector
+from .slither_detectors import (
+    ReentrancyDetector, TxOriginDetector, UncheckedCallDetector,
+    IntegerOverflowDetector, TimestampDependenceDetector,
+    BlockHashUsageDetector, AccessControlDetector
+)
 from .mythril_detectors import (
     IntegerOverflowDetector, ReentrancySymbolicDetector, 
     UncheckedCallSymbolicDetector, UnprotectedEtherDetector,
     UnprotectedSelfdestructDetector, TxOriginSymbolicDetector
 )
-
+from .medusa_detectors import (
+    ConservationInvariantsDetector,
+    PermissionInvariantsDetector,
+    LivenessInvariantsDetector,
+    PropertyViolationDetector
+)
+from .securify2_detectors import (
+    IntegerOverflowDetector, UninitializedStorageDetector, 
+    MissingAccessControlDetector, TimestampDependenceDetector,
+    UnsafeDelegatecallDetector, UnprotectedSelfdestructDetector,
+    LockedEtherDetector
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +54,25 @@ class NativeAnalysisEngine:
         self.registry.register(ReentrancyDetector)
         self.registry.register(TxOriginDetector)
         self.registry.register(UncheckedCallDetector)
+        self.registry.register(IntegerOverflowDetector)
+        self.registry.register(TimestampDependenceDetector)
+        self.registry.register(BlockHashUsageDetector)
+        self.registry.register(AccessControlDetector)
+        
+        # Register Medusa-based detectors
+        self.registry.register(ConservationInvariantsDetector)
+        self.registry.register(PermissionInvariantsDetector)
+        self.registry.register(LivenessInvariantsDetector)
+        self.registry.register(PropertyViolationDetector)
+        
+        # Register Securify2-based detectors
+        self.registry.register(IntegerOverflowDetector)
+        self.registry.register(UninitializedStorageDetector)
+        self.registry.register(MissingAccessControlDetector)
+        self.registry.register(TimestampDependenceDetector)
+        self.registry.register(UnsafeDelegatecallDetector)
+        self.registry.register(UnprotectedSelfdestructDetector)
+        self.registry.register(LockedEtherDetector)
         
         # Register Mythril-based symbolic execution detectors
         self.registry.register(IntegerOverflowDetector)
