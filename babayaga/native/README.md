@@ -24,7 +24,14 @@ babayaga/native/
 │   ├── reentrancy.py
 │   ├── tx_origin.py
 │   └── unchecked_call.py
-├── mythril_detectors/        # Native Mythril implementations (planned)
+├── mythril_detectors/        # Native Mythril symbolic execution detectors
+│   ├── symbolic_engine.py   # Z3-based symbolic execution engine
+│   ├── integer_overflow.py  # SWC-101: Integer overflow/underflow
+│   ├── reentrancy.py        # SWC-107: Reentrancy
+│   ├── unchecked_call.py    # SWC-104: Unchecked call return
+│   ├── unprotected_ether.py # SWC-105: Unprotected ether withdrawal
+│   ├── unprotected_selfdestruct.py  # SWC-106: Unprotected selfdestruct
+│   └── tx_origin.py         # SWC-115: tx.origin authentication
 ├── medusa_detectors/         # Native Medusa implementations (planned)
 └── securify2_detectors/      # Native Securify2 implementations (planned)
 ```
@@ -58,6 +65,31 @@ config = {
 result = await engine.analyze_project("./contracts/", config)
 ```
 
+## Implemented Detectors
+
+### Slither-Based Detectors
+
+| Detector ID | Name | SWC | Severity |
+|------------|------|-----|----------|
+| `native-reentrancy-eth` | Reentrancy Vulnerability | SWC-107 | High |
+| `native-tx-origin` | Dangerous tx.origin Usage | SWC-115 | Medium |
+| `native-unchecked-call` | Unchecked External Call | SWC-104 | Medium |
+
+### Mythril-Based Detectors (Symbolic Execution)
+
+| Detector ID | Name | SWC | Severity |
+|------------|------|-----|----------|
+| `native-mythril-integer-overflow` | Integer Overflow/Underflow | SWC-101 | High |
+| `native-mythril-reentrancy` | Reentrancy (Symbolic) | SWC-107 | High |
+| `native-mythril-unchecked-call` | Unchecked Call (Symbolic) | SWC-104 | Medium |
+| `native-mythril-unprotected-ether` | Unprotected Ether Withdrawal | SWC-105 | High |
+| `native-mythril-unprotected-selfdestruct` | Unprotected Selfdestruct | SWC-106 | Critical |
+| `native-mythril-tx-origin` | tx.origin Authentication (Symbolic) | SWC-115 | Medium |
+
+**Total Detectors**: 9 (3 Slither + 6 Mythril)
+
+See [NATIVE_MYTHRIL.md](../../docs/NATIVE_MYTHRIL.md) for detailed Mythril detector documentation.
+
 ### Detector Registry
 
 ```python
@@ -70,6 +102,7 @@ all_detectors = registry.get_all_detectors()
 
 # Get detectors from specific tool
 slither_detectors = registry.get_detectors_by_tool('slither')
+mythril_detectors = registry.get_detectors_by_tool('mythril')
 
 # Get version information
 version_info = registry.get_version_info()
