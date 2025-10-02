@@ -1,7 +1,7 @@
 """Detector registry for managing native detectors."""
 
 import logging
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional, Type, Any
 from pathlib import Path
 import json
 

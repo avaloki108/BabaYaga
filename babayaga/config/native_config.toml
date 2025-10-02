@@ -1,0 +1,72 @@
+# Native Analysis Configuration
+# This file controls whether to use native implementations or external tool binaries
+
+[native_analysis]
+# Enable native analysis engine
+enabled = true
+
+# Use native implementations when available (falls back to external tools if needed)
+prefer_native = true
+
+# Run both native and external tools for comparison/validation
+hybrid_mode = false
+
+[native_detectors]
+# Enable/disable specific detector categories
+reentrancy_enabled = true
+access_control_enabled = true
+arithmetic_enabled = true
+external_calls_enabled = true
+timestamp_enabled = true
+randomness_enabled = true
+delegatecall_enabled = true
+selfdestruct_enabled = true
+storage_enabled = true
+deprecated_enabled = true
+gas_optimization_enabled = true
+code_quality_enabled = true
+logic_errors_enabled = true
+
+[slither]
+# Use native Slither detectors when available
+use_native = true
+
+# Fallback to external Slither binary if native implementation unavailable
+fallback_to_binary = true
+
+# Specific detectors to enable (empty list means all enabled)
+enabled_detectors = []
+
+# Specific detectors to disable
+disabled_detectors = []
+
+[mythril]
+# Use native Mythril detectors when available
+use_native = true
+
+# Fallback to external Mythril binary if native implementation unavailable
+fallback_to_binary = true
+
+[medusa]
+# Use native Medusa-like analysis when available
+use_native = true
+
+# Fallback to external Medusa binary if native implementation unavailable
+fallback_to_binary = true
+
+[securify2]
+# Use native Securify2-like analysis when available
+use_native = true
+
+# Fallback to external Securify2 binary if native implementation unavailable
+fallback_to_binary = true
+
+[version_tracking]
+# Automatically check for updates to upstream tools
+auto_check_updates = false
+
+# Path to detector version manifest
+manifest_path = "babayaga/native/DETECTORS_MANIFEST.json"
+
+# Warn when detector is more than N days out of date
+warn_after_days = 90

@@ -143,9 +143,7 @@ class NativeAnalysisEngine:
             'files_analyzed': len(sol_files),
             'file_results': file_results,
             'findings': all_findings,
-            'summary': self._create_summary([
-                DetectorFinding(**f) for f in all_findings
-            ]),
+            'summary': self._create_summary_from_dicts(all_findings),
             'detector_info': self._get_detector_info()
         }
         
@@ -184,6 +182,33 @@ class NativeAnalysisEngine:
             
             # Count by detector
             detector_counts[finding.detector_id] = detector_counts.get(finding.detector_id, 0) + 1
+        
+        return {
+            'total_findings': len(findings),
+            'by_severity': severity_counts,
+            'by_category': category_counts,
+            'by_detector': detector_counts
+        }
+    
+    def _create_summary_from_dicts(self, findings: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Create summary statistics from finding dictionaries."""
+        severity_counts = {}
+        category_counts = {}
+        detector_counts = {}
+        
+        for finding in findings:
+            # Count by severity
+            severity = finding.get('severity', 'Unknown')
+            severity_counts[severity] = severity_counts.get(severity, 0) + 1
+            
+            # Count by category
+            if finding.get('category'):
+                category = finding['category']
+                category_counts[category] = category_counts.get(category, 0) + 1
+            
+            # Count by detector
+            detector_id = finding.get('detector_id', 'unknown')
+            detector_counts[detector_id] = detector_counts.get(detector_id, 0) + 1
         
         return {
             'total_findings': len(findings),
