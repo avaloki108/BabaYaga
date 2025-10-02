@@ -158,7 +158,8 @@ class TestSlitherModule:
         mock_run.return_value.stdout = json.dumps(slither_output)
         
         with patch.object(SlitherModule, 'is_available', return_value=True):
-            module = SlitherModule(console)
+            # Disable native to test subprocess path
+            module = SlitherModule(console, use_native=False)
             
             # Mock progress
             progress = Mock()
