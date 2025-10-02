@@ -11,7 +11,7 @@
     },
     "mythril": {
       "repository": "https://github.com/ConsenSys/mythril",
-      "latest_version": "0.24.0",
+      "latest_version": "0.24.8",
       "documentation": "https://mythril-classic.readthedocs.io/"
     },
     "securify2": {
@@ -55,7 +55,68 @@
         "status": "active"
       }
     ],
-    "mythril": [],
+    "mythril": [
+      {
+        "detector_id": "native-mythril-integer-overflow",
+        "name": "Integer Overflow/Underflow",
+        "upstream_detector_id": "integer-overflow",
+        "source_version": "0.24.8",
+        "last_updated": "2024-01-15",
+        "swc_id": "SWC-101",
+        "implementation_file": "babayaga/native/mythril_detectors/integer_overflow.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-mythril-reentrancy",
+        "name": "Reentrancy Vulnerability (Symbolic Execution)",
+        "upstream_detector_id": "reentrancy",
+        "source_version": "0.24.8",
+        "last_updated": "2024-01-15",
+        "swc_id": "SWC-107",
+        "implementation_file": "babayaga/native/mythril_detectors/reentrancy.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-mythril-unchecked-call",
+        "name": "Unchecked Call Return Value",
+        "upstream_detector_id": "unchecked-send",
+        "source_version": "0.24.8",
+        "last_updated": "2024-01-15",
+        "swc_id": "SWC-104",
+        "implementation_file": "babayaga/native/mythril_detectors/unchecked_call.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-mythril-unprotected-ether",
+        "name": "Unprotected Ether Withdrawal",
+        "upstream_detector_id": "unprotected-ether-withdrawal",
+        "source_version": "0.24.8",
+        "last_updated": "2024-01-15",
+        "swc_id": "SWC-105",
+        "implementation_file": "babayaga/native/mythril_detectors/unprotected_ether.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-mythril-unprotected-selfdestruct",
+        "name": "Unprotected Selfdestruct",
+        "upstream_detector_id": "unprotected-selfdestruct",
+        "source_version": "0.24.8",
+        "last_updated": "2024-01-15",
+        "swc_id": "SWC-106",
+        "implementation_file": "babayaga/native/mythril_detectors/unprotected_selfdestruct.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-mythril-tx-origin",
+        "name": "Dangerous tx.origin Usage (Symbolic Execution)",
+        "upstream_detector_id": "tx-origin",
+        "source_version": "0.24.8",
+        "last_updated": "2024-01-15",
+        "swc_id": "SWC-115",
+        "implementation_file": "babayaga/native/mythril_detectors/tx_origin.py",
+        "status": "active"
+      }
+    ],
     "securify2": [
       {
         "detector_id": "native-securify2-integer-overflow",
@@ -174,11 +235,10 @@
       "weak-prng"
     ],
     "mythril": [
-      "integer-overflow",
-      "integer-underflow",
       "delegatecall-to-untrusted",
-      "unprotected-selfdestruct",
-      "state-change-external-calls"
+      "state-change-external-calls",
+      "timestamp-dependence",
+      "predictable-randomness"
     ],
     "securify2": [
       "dao-vulnerability",

@@ -50,9 +50,6 @@ class ReentrancyDetector(BaseDetector):
         findings = []
         lines = contract_source.split('\n')
         
-        # Pattern matching for common reentrancy patterns
-        # This is a simplified version - a full implementation would use AST analysis
-        
         current_function = None
         external_call_line = None
         state_change_after_call = False
@@ -114,9 +111,9 @@ class ReentrancyDetector(BaseDetector):
             r'\.call\s*\(',         # Old syntax: .call()
             r'\.delegatecall\s*\{', # New syntax: .delegatecall{...}
             r'\.delegatecall\s*\(', # Old syntax: .delegatecall()
-            r'\.send\s*\(',
-            r'\.transfer\s*\(',
-            r'\w+\([^)]*\)\s*\.value\s*\(',
+            r'\.send\s*\(',         # .send()
+            r'\.transfer\s*\(',     # .transfer()
+            r'\w+\([^)]*\)\s*\.value\s*\(', # .value(...) calls
         ]
         
         return any(re.search(pattern, line) for pattern in patterns)

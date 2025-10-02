@@ -14,6 +14,11 @@ from .slither_detectors import (
     IntegerOverflowDetector, TimestampDependenceDetector,
     BlockHashUsageDetector, AccessControlDetector
 )
+from .mythril_detectors import (
+    IntegerOverflowDetector, ReentrancySymbolicDetector, 
+    UncheckedCallSymbolicDetector, UnprotectedEtherDetector,
+    UnprotectedSelfdestructDetector, TxOriginSymbolicDetector
+)
 from .medusa_detectors import (
     ConservationInvariantsDetector,
     PermissionInvariantsDetector,
@@ -69,7 +74,16 @@ class NativeAnalysisEngine:
         self.registry.register(UnprotectedSelfdestructDetector)
         self.registry.register(LockedEtherDetector)
         
-        # Future: Register Mythril-based detectors
+        # Register Mythril-based symbolic execution detectors
+        self.registry.register(IntegerOverflowDetector)
+        self.registry.register(ReentrancySymbolicDetector)
+        self.registry.register(UncheckedCallSymbolicDetector)
+        self.registry.register(UnprotectedEtherDetector)
+        self.registry.register(UnprotectedSelfdestructDetector)
+        self.registry.register(TxOriginSymbolicDetector)
+        
+        # Future: Register Medusa-based detectors
+        # Future: Register Securify2-based detectors
         
         status = self.registry.get_detector_status()
         logger.info(f"Initialized native analysis engine with {status['total_detectors']} detectors")

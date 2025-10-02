@@ -14,6 +14,8 @@ from rich.progress import Progress, TaskID
 import uuid
 from datetime import datetime
 
+from babayaga.modules.native_mythril_module import NativeMythrilModule
+
 @dataclass
 class AdapterConfig:
     """Configuration for analysis tool adapters."""
@@ -347,10 +349,15 @@ class SlitherAdapter(BaseAdapter):
         return findings
 
 class MythrilAdapter(BaseAdapter):
-    """Enhanced Mythril adapter with symbolic execution capabilities."""
+    """Enhanced Mythril adapter with symbolic execution capabilities.
     
-    def __init__(self, console: Console):
+    Uses native Python implementation by default, with fallback to binary.
+    """
+    
+    def __init__(self, console: Console, prefer_native: bool = True):
         super().__init__(console, "mythril")
+        self.prefer_native = prefer_native
+        self.native_module = NativeMythrilModule(console) if prefer_native else None
         self.mythril_path = self._find_mythril()
     
     def _find_mythril(self) -> Optional[str]:
@@ -376,7 +383,10 @@ class MythrilAdapter(BaseAdapter):
             return False
     
     async def run(self, repo_path: Path, target: Optional[str] = None, config: AdapterConfig = None) -> List[Finding]:
-        """Run Mythril symbolic execution analysis."""
+        """Run Mythril symbolic execution analysis.
+        
+        Uses native implementation by default, falls back to binary if needed.
+        """
         if not config:
             config = AdapterConfig(
                 cmd="myth",
@@ -386,6 +396,17 @@ class MythrilAdapter(BaseAdapter):
         
         findings = []
         
+        # Try native implementation first if preferred
+        if self.prefer_native and self.native_module:
+            try:
+                self.console.print("[cyan]Using native Mythril symbolic execution...[/cyan]")
+                native_findings = await self._run_native_analysis(repo_path, target)
+                if native_findings:
+                    return native_findings
+            except Exception as e:
+                self.console.print(f"[yellow]Native analysis failed, trying binary: {e}[/yellow]")
+        
+        # Fall back to external binary
         # Find Solidity files to analyze
         sol_files = list(Path(repo_path).rglob("*.sol"))
         if target:
@@ -472,6 +493,57 @@ class MythrilAdapter(BaseAdapter):
             "SWC-115": "Use msg.sender instead of tx.origin for authorization."
         }
         return recommendations.get(swc_id, "Review the vulnerability and implement appropriate security measures.")
+    
+    async def _run_native_analysis(self, repo_path: Path, target: Optional[str] = None) -> List[Finding]:
+        """Run native Mythril analysis without subprocess.
+        
+        Args:
+            repo_path: Path to repository
+            target: Optional specific target file
+            
+        Returns:
+            List of findings
+        """
+        findings = []
+        
+        # Determine target path
+        analysis_target = str(target) if target else str(repo_path)
+        
+        # Run native analysis (without progress bar for adapter)
+        native_findings = await self.native_module.run_quick_analysis(analysis_target)
+        
+        # Convert to canonical Finding format
+        for native_finding in native_findings:
+            finding = Finding(
+                id=str(uuid.uuid4()),
+                tool="mythril-native",
+                rule_id=f"mythril-{native_finding.get('swc_id', 'unknown')}",
+                title=native_finding.get('title', 'Mythril Detection'),
+                description=native_finding.get('description', ''),
+                severity=self._normalize_severity(native_finding.get('impact', 'medium')),
+                confidence=self._parse_confidence(native_finding.get('confidence', 'Medium')),
+                files=[{
+                    "path": native_finding.get('filename', ''),
+                    "lines": [native_finding.get('lineno', 0)]
+                }],
+                trace=[],
+                tool_output=json.dumps(native_finding, indent=2),
+                checks=self._map_mythril_to_checklist(native_finding.get('swc_id', '')),
+                recommendation=native_finding.get('remediation', ''),
+                references=[]
+            )
+            findings.append(finding)
+        
+        return findings
+    
+    def _parse_confidence(self, confidence: str) -> float:
+        """Parse confidence string to float."""
+        confidence_map = {
+            'High': 0.9,
+            'Medium': 0.7,
+            'Low': 0.5
+        }
+        return confidence_map.get(confidence, 0.7)
     
     def _parse_mythril_text(self, text_output: str, target: str) -> List[Finding]:
         """Parse Mythril text output as fallback."""
