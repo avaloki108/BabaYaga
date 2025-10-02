@@ -101,10 +101,10 @@ class BabaYagaInstaller:
             # Check for uv
             if self._check_command("uv --version"):
                 progress.update(task, description="Installing with uv (recommended)...")
-                install_cmd = ["uv", "pip", "install", "-e", ".[dev,test,security]"]
+                install_cmd = ["uv", "pip", "install", "-e", ".[dev,test]"]
             else:
                 progress.update(task, description="Installing with pip...")
-                install_cmd = [sys.executable, "-m", "pip", "install", "-e", ".[dev,test,security]"]
+                install_cmd = [sys.executable, "-m", "pip", "install", "-e", ".[dev,test]"]
             
             try:
                 result = subprocess.run(
@@ -222,9 +222,9 @@ class BabaYagaInstaller:
                     console.print("Please install it manually from: https://ollama.ai/download")
                     return
             else:
-                console.print("[yellow]⚠️ Please install Ollama manually on Windows from: https://ollama.ai/download[/yellow]")
+                console.print("[yellow]⚠️ Please install Ollama manually on Windows from: https://ollama.ai/download[/yellow>")
                 return
-        
+            
         if self._check_command("ollama --version") and Confirm.ask("\nDownload recommended AI models?", default=True):
             self._download_recommended_models()
     
@@ -269,27 +269,12 @@ class BabaYagaInstaller:
                 console.print("[yellow]Skipping configuration creation.[/yellow]")
                 return
         
-        default_config = """[model]
-default_model = "ollama/gpt-oss:20b"
-temperature = 0.7
-top_p = 0.9
-max_tokens = 2000
+        default_config = """[model]\ndefault_model = \"ollama/gpt-oss:20b\"\ntemperature = 0.7\ntop_p = 0.9\max_tokens = 2000
 
-[tools]
-slither_enabled = true
-mythril_enabled = true
-foundry_enabled = true
-hardhat_enabled = true # Set to false if you don't use Hardhat
+[tools]\nslither_enabled = true\nmythril_enabled = true\nfoundry_enabled = true\nhardhat_enabled = true # Set to false if you don't use Hardhat
 
-[audit]
-parallel_execution = true
-detailed_reports = true
-export_format = "json"
-
-[output]
-console_style = "rich"
-log_level = "INFO"
-"""
+[audit]\nparallel_execution = true\ndetailed_reports = true\nexport_format = \"json\"\n
+[output]\nconsole_style = \"rich\"\nlog_level = \"INFO\"\n"""
         try:
             config_file.write_text(default_config)
             console.print(f"[green]✅ Default configuration created at: {config_file}[/green]")
@@ -298,7 +283,7 @@ log_level = "INFO"
     
     def run_installation(self):
         """Run the complete installation process."""
-        
+
         banner = """
 ╦ ╦┌─┐┌┐ ╔═╗╔═╗┬ ┬┌┬┐┬┌┬┐╔╦╗╔═╗╔═╗
 ║║║├┤ ├┴┐╠═╣║ ║ ║ │││ │ ║║║║ ║╠═╝
