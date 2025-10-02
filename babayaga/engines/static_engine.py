@@ -15,6 +15,10 @@ import re
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
 
+# Import native analysis engine for Securify2-inspired detectors
+from ..native.native_engine import NativeAnalysisEngine
+from ..native.detector_registry import get_registry
+
 @dataclass
 class StaticFinding:
     """Static analysis finding with comprehensive metadata."""
@@ -52,10 +56,13 @@ class StaticAnalysisEngine:
         self.console = console
         self.logger = logging.getLogger(__name__)
         
+        # Initialize native analysis engine
+        self.native_engine = NativeAnalysisEngine(console)
+        
         # Tool availability
         self.tools_available = {
             'slither': self._check_slither(),
-            'securify2': self._check_securify2(),
+            'securify2': True,  # Always use native Securify2 detectors
             'solhint': self._check_solhint(),
             'custom': True  # Always available
         }
@@ -240,42 +247,78 @@ class StaticAnalysisEngine:
     
     def _run_securify2_analysis(self, target_path: str, config: Dict[str, Any], 
                                progress: Progress, task_id: int) -> List[StaticFinding]:
-        """Run Securify2 static analysis."""
+        """Run native Securify2-inspired static analysis."""
         
         findings = []
         
         try:
             progress.update(task_id, advance=20)
             
-            # Prepare Securify2 command
-            cmd = ['securify', target_path]
-            
-            # Add severity filters if specified
-            if 'securify_severity' in config:
-                cmd.extend(['--include-severity'] + config['securify_severity'])
+            # Get native Securify2 detectors
+            registry = get_registry()
+            securify2_detectors = registry.get_detectors_by_tool('securify2')
             
             progress.update(task_id, advance=20)
             
-            # Run Securify2
-            result = subprocess.run(
-                cmd, 
-                capture_output=True, 
-                text=True, 
-                timeout=config.get('securify_timeout', 180)
-            )
+            # Read source file(s)
+            source_files = []
+            if os.path.isfile(target_path):
+                source_files.append(target_path)
+            elif os.path.isdir(target_path):
+                for root, _, files in os.walk(target_path):
+                    for file in files:
+                        if file.endswith('.sol'):
+                            source_files.append(os.path.join(root, file))
+            
+            progress.update(task_id, advance=20)
+            
+            # Run native Securify2 detectors on each file
+            for file_path in source_files:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        source_code = f.read()
+                    
+                    # Run detectors using asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    detector_findings = loop.run_until_complete(
+                        registry.run_all_detectors(
+                            source_code, 
+                            file_path,
+                            only_enabled=True,
+                            tool_filter='securify2'
+                        )
+                    )
+                    loop.close()
+                    
+                    # Convert native findings to StaticFinding format
+                    for df in detector_findings:
+                        finding = StaticFinding(
+                            id=df.detector_id + f"_{df.line_number}",
+                            title=df.title,
+                            description=df.description,
+                            severity=df.severity.value,
+                            confidence=df.confidence,
+                            tool='securify2-native',
+                            category=df.category.value if df.category else 'static_analysis',
+                            file_path=df.file_path,
+                            line_number=df.line_number,
+                            column_number=df.column_number,
+                            function_name=df.function_name,
+                            swc_id=df.swc_id,
+                            code_snippet=df.code_snippet,
+                            remediation=df.remediation,
+                            references=df.references
+                        )
+                        findings.append(finding)
+                        
+                except Exception as e:
+                    self.logger.error(f"Error analyzing {file_path} with native Securify2: {e}")
             
             progress.update(task_id, advance=40)
             
-            if result.returncode == 0:
-                # Parse Securify2 output
-                findings.extend(self._parse_securify2_output(result.stdout, target_path))
-            
-            progress.update(task_id, advance=20)
-            
-        except subprocess.TimeoutExpired:
-            self.logger.warning("Securify2 analysis timed out")
         except Exception as e:
-            self.logger.error(f"Securify2 analysis failed: {e}")
+            self.logger.error(f"Native Securify2 analysis failed: {e}")
         
         return findings
     
