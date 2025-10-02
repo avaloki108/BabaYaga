@@ -1,0 +1,93 @@
+{
+  "manifest_version": "1.0.0",
+  "generated": "2024-01-15",
+  "description": "Tracking manifest for native detector implementations and their upstream tool versions",
+  "update_instructions": "When updating detectors, modify the source_version and last_updated fields to match the upstream tool version being synced from",
+  "upstream_tools": {
+    "slither": {
+      "repository": "https://github.com/crytic/slither",
+      "latest_version": "0.10.0",
+      "documentation": "https://github.com/crytic/slither/wiki/Detector-Documentation"
+    },
+    "mythril": {
+      "repository": "https://github.com/ConsenSys/mythril",
+      "latest_version": "0.24.0",
+      "documentation": "https://mythril-classic.readthedocs.io/"
+    },
+    "securify2": {
+      "repository": "https://github.com/eth-sri/securify2",
+      "latest_version": "2.0.0",
+      "documentation": "https://github.com/eth-sri/securify2"
+    },
+    "medusa": {
+      "repository": "https://github.com/crytic/medusa",
+      "latest_version": "0.1.0",
+      "documentation": "https://github.com/crytic/medusa"
+    }
+  },
+  "implemented_detectors": {
+    "slither": [
+      {
+        "detector_id": "native-reentrancy-eth",
+        "name": "Reentrancy Vulnerability",
+        "upstream_detector_id": "reentrancy-eth",
+        "source_version": "0.10.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/slither_detectors/reentrancy.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-tx-origin",
+        "name": "Dangerous tx.origin Usage",
+        "upstream_detector_id": "tx-origin",
+        "source_version": "0.10.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/slither_detectors/tx_origin.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-unchecked-call",
+        "name": "Unchecked External Call",
+        "upstream_detector_id": "unchecked-lowlevel",
+        "source_version": "0.10.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/slither_detectors/unchecked_call.py",
+        "status": "active"
+      }
+    ],
+    "mythril": [],
+    "securify2": [],
+    "medusa": []
+  },
+  "planned_detectors": {
+    "slither": [
+      "arbitrary-send-eth",
+      "suicidal",
+      "uninitialized-state",
+      "uninitialized-storage",
+      "arbitrary-send-erc20",
+      "controlled-delegatecall",
+      "reentrancy-no-eth",
+      "reentrancy-benign",
+      "timestamp",
+      "weak-prng"
+    ],
+    "mythril": [
+      "integer-overflow",
+      "integer-underflow",
+      "delegatecall-to-untrusted",
+      "unprotected-selfdestruct",
+      "state-change-external-calls"
+    ],
+    "securify2": [
+      "dao-vulnerability",
+      "locked-ether",
+      "unrestricted-write"
+    ],
+    "medusa": [
+      "invariant-violations",
+      "assertion-failures",
+      "property-violations"
+    ]
+  }
+}
