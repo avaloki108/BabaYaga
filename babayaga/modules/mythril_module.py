@@ -1,4 +1,8 @@
-"""Advanced Mythril integration module for BabaYaga."""
+"""Advanced Mythril integration module for BabaYaga.
+
+This module can use either the native Python implementation or
+fall back to the external Mythril binary if needed.
+"""
 
 import json
 import subprocess
@@ -9,11 +13,19 @@ from typing import Dict, Any, List, Optional
 from rich.console import Console
 from rich.progress import Progress, TaskID
 
+from .native_mythril_module import NativeMythrilModule
+
 class MythrilModule:
-    """Advanced Mythril symbolic execution integration."""
+    """Advanced Mythril symbolic execution integration.
     
-    def __init__(self, console: Console):
+    Uses native Python implementation by default, with fallback to
+    external Mythril binary if configured.
+    """
+    
+    def __init__(self, console: Console, prefer_native: bool = True):
         self.console = console
+        self.prefer_native = prefer_native
+        self.native_module = NativeMythrilModule(console) if prefer_native else None
         self.mythril_path = self._find_mythril()
         
     def _find_mythril(self) -> Optional[str]:
@@ -81,9 +93,23 @@ class MythrilModule:
         return None
     
     async def run_analysis(self, target: str, progress: Progress, task_id: TaskID) -> List[Dict[str, Any]]:
-        """Run comprehensive Mythril symbolic execution."""
+        """Run comprehensive Mythril symbolic execution.
+        
+        Uses native implementation by default, falls back to binary if needed.
+        """
         findings = []
         
+        # Try native implementation first if preferred
+        if self.prefer_native and self.native_module:
+            try:
+                progress.update(task_id, description="[yellow]🧠 Using native symbolic execution...")
+                findings = await self.native_module.run_analysis(target, progress, task_id)
+                if findings:
+                    return findings
+            except Exception as e:
+                self.console.print(f"[yellow]Native analysis failed, trying binary: {e}[/yellow]")
+        
+        # Fall back to external binary
         if not self.is_available():
             if not await self.install_mythril():
                 progress.update(task_id, description="[red]❌ Mythril unavailable")
