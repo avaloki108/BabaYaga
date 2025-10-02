@@ -9,12 +9,29 @@ from typing import Dict, Any, List, Optional
 from rich.console import Console
 from rich.progress import Progress, TaskID
 
+# Import native analysis engine
+try:
+    from babayaga.native.native_engine import NativeAnalysisEngine
+    NATIVE_ANALYSIS_AVAILABLE = True
+except ImportError:
+    NATIVE_ANALYSIS_AVAILABLE = False
+
 class SlitherModule:
     """Advanced Slither static analysis integration."""
     
-    def __init__(self, console: Console):
+    def __init__(self, console: Console, use_native: bool = True):
         self.console = console
         self.slither_path = self._find_slither()
+        self.use_native = use_native and NATIVE_ANALYSIS_AVAILABLE
+        
+        # Initialize native engine if requested and available
+        self.native_engine = None
+        if self.use_native:
+            try:
+                self.native_engine = NativeAnalysisEngine(console)
+            except Exception as e:
+                self.console.print(f"[yellow]⚠️ Failed to initialize native engine: {e}[/yellow]")
+                self.use_native = False
         
     def _find_slither(self) -> Optional[str]:
         """Find Slither installation."""
@@ -86,6 +103,16 @@ class SlitherModule:
         """Run comprehensive Slither analysis."""
         findings = []
         
+        # Try native analysis first if enabled
+        if self.use_native and self.native_engine:
+            try:
+                progress.update(task_id, description="[green]🔬 Running native analysis...")
+                return await self._run_native_analysis(target, progress, task_id)
+            except Exception as e:
+                self.console.print(f"[yellow]⚠️ Native analysis failed, falling back to Slither binary: {e}[/yellow]")
+                # Fall through to binary analysis
+        
+        # Use binary Slither as fallback
         if not self.is_available():
             if not await self.install_slither():
                 progress.update(task_id, description="[red]❌ Slither unavailable")
@@ -131,6 +158,61 @@ class SlitherModule:
             progress.update(task_id, description=f"[red]❌ Slither error: {str(e)[:30]}...")
             
         return findings
+    
+    async def _run_native_analysis(self, target: str, progress: Progress, task_id: TaskID) -> List[Dict[str, Any]]:
+        """Run native Python-based analysis."""
+        findings = []
+        
+        try:
+            # Prepare target
+            analysis_target = self._prepare_target(target)
+            
+            # Run native analysis
+            if os.path.isfile(analysis_target):
+                result = await self.native_engine.analyze_file(analysis_target)
+                native_findings = result.get('findings', [])
+            else:
+                result = await self.native_engine.analyze_project(analysis_target)
+                native_findings = result.get('findings', [])
+            
+            # Convert native findings to Slither-compatible format
+            for native_finding in native_findings:
+                finding = {
+                    'tool': 'native',
+                    'check': native_finding.get('detector_id', 'unknown'),
+                    'description': native_finding.get('description', ''),
+                    'impact': native_finding.get('severity', 'Medium').title(),
+                    'confidence': self._convert_confidence(native_finding.get('confidence', 0.7)),
+                    'elements': [{
+                        'name': native_finding.get('function_name', ''),
+                        'source_mapping': {
+                            'filename_absolute': native_finding.get('file_path', ''),
+                            'lines': [native_finding.get('line_number')] if native_finding.get('line_number') else []
+                        }
+                    }],
+                    'markdown': native_finding.get('description', ''),
+                    'title': native_finding.get('title', ''),
+                    'swc_id': native_finding.get('swc_id', ''),
+                    'remediation': native_finding.get('remediation', '')
+                }
+                findings.append(finding)
+            
+            progress.update(task_id, description=f"[green]✅ Native analysis found {len(findings)} issues")
+            
+        except Exception as e:
+            self.console.print(f"[red]❌ Native analysis error: {e}[/red]")
+            raise
+        
+        return findings
+    
+    def _convert_confidence(self, confidence: float) -> str:
+        """Convert numeric confidence to Slither format."""
+        if confidence >= 0.8:
+            return 'High'
+        elif confidence >= 0.6:
+            return 'Medium'
+        else:
+            return 'Low'
     
     def _parse_slither_output(self, slither_output: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Parse Slither JSON output into standardized findings."""

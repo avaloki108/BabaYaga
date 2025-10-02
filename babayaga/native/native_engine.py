@@ -9,12 +9,17 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeEl
 
 from .detector_registry import get_registry, DetectorRegistry
 from .base_detector import DetectorFinding
-from .slither_detectors import ReentrancyDetector, TxOriginDetector, UncheckedCallDetector
+from .slither_detectors import (
+    ReentrancyDetector, TxOriginDetector, UncheckedCallDetector,
+    IntegerOverflowDetector, TimestampDependenceDetector,
+    BlockHashUsageDetector, AccessControlDetector
+)
 from .medusa_detectors import (
     ConservationInvariantsDetector,
     PermissionInvariantsDetector,
     LivenessInvariantsDetector,
     PropertyViolationDetector
+)
 )
 
 
@@ -40,6 +45,10 @@ class NativeAnalysisEngine:
         self.registry.register(ReentrancyDetector)
         self.registry.register(TxOriginDetector)
         self.registry.register(UncheckedCallDetector)
+        self.registry.register(IntegerOverflowDetector)
+        self.registry.register(TimestampDependenceDetector)
+        self.registry.register(BlockHashUsageDetector)
+        self.registry.register(AccessControlDetector)
         
         # Register Medusa-based detectors
         self.registry.register(ConservationInvariantsDetector)
