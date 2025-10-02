@@ -14,6 +14,13 @@ from .slither_detectors import (
     IntegerOverflowDetector, TimestampDependenceDetector,
     BlockHashUsageDetector, AccessControlDetector
 )
+from .medusa_detectors import (
+    ConservationInvariantsDetector,
+    PermissionInvariantsDetector,
+    LivenessInvariantsDetector,
+    PropertyViolationDetector
+)
+)
 
 
 logger = logging.getLogger(__name__)
@@ -43,8 +50,13 @@ class NativeAnalysisEngine:
         self.registry.register(BlockHashUsageDetector)
         self.registry.register(AccessControlDetector)
         
+        # Register Medusa-based detectors
+        self.registry.register(ConservationInvariantsDetector)
+        self.registry.register(PermissionInvariantsDetector)
+        self.registry.register(LivenessInvariantsDetector)
+        self.registry.register(PropertyViolationDetector)
+        
         # Future: Register Mythril-based detectors
-        # Future: Register Medusa-based detectors
         # Future: Register Securify2-based detectors
         
         status = self.registry.get_detector_status()
