@@ -20,8 +20,12 @@ from .medusa_detectors import (
     LivenessInvariantsDetector,
     PropertyViolationDetector
 )
+from .securify2_detectors import (
+    IntegerOverflowDetector, UninitializedStorageDetector, 
+    MissingAccessControlDetector, TimestampDependenceDetector,
+    UnsafeDelegatecallDetector, UnprotectedSelfdestructDetector,
+    LockedEtherDetector
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +60,16 @@ class NativeAnalysisEngine:
         self.registry.register(LivenessInvariantsDetector)
         self.registry.register(PropertyViolationDetector)
         
+        # Register Securify2-based detectors
+        self.registry.register(IntegerOverflowDetector)
+        self.registry.register(UninitializedStorageDetector)
+        self.registry.register(MissingAccessControlDetector)
+        self.registry.register(TimestampDependenceDetector)
+        self.registry.register(UnsafeDelegatecallDetector)
+        self.registry.register(UnprotectedSelfdestructDetector)
+        self.registry.register(LockedEtherDetector)
+        
         # Future: Register Mythril-based detectors
-        # Future: Register Securify2-based detectors
         
         status = self.registry.get_detector_status()
         logger.info(f"Initialized native analysis engine with {status['total_detectors']} detectors")

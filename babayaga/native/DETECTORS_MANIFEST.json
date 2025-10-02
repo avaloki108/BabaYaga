@@ -56,7 +56,71 @@
       }
     ],
     "mythril": [],
-    "securify2": [],
+    "securify2": [
+      {
+        "detector_id": "native-securify2-integer-overflow",
+        "name": "Integer Overflow/Underflow",
+        "upstream_detector_id": "IntegerOverflow",
+        "source_version": "0.1.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/securify2_detectors/integer_overflow.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-securify2-uninitialized-storage",
+        "name": "Uninitialized Storage Pointer",
+        "upstream_detector_id": "UninitializedStoragePointer",
+        "source_version": "0.1.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/securify2_detectors/uninitialized_storage.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-securify2-missing-access-control",
+        "name": "Missing Access Control",
+        "upstream_detector_id": "MissingAccessControl",
+        "source_version": "0.1.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/securify2_detectors/missing_access_control.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-securify2-timestamp-dependence",
+        "name": "Timestamp Dependence",
+        "upstream_detector_id": "TimestampDependence",
+        "source_version": "0.1.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/securify2_detectors/timestamp_dependence.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-securify2-unsafe-delegatecall",
+        "name": "Unsafe Delegatecall",
+        "upstream_detector_id": "UnsafeDelegatecall",
+        "source_version": "0.1.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/securify2_detectors/unsafe_delegatecall.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-securify2-unprotected-selfdestruct",
+        "name": "Unprotected Selfdestruct",
+        "upstream_detector_id": "UnprotectedSelfdestruct",
+        "source_version": "0.1.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/securify2_detectors/unprotected_selfdestruct.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-securify2-locked-ether",
+        "name": "Locked Ether",
+        "upstream_detector_id": "LockedEther",
+        "source_version": "0.1.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/securify2_detectors/locked_ether.py",
+        "status": "active"
+      }
+    ],
     "medusa": [
       {
         "detector_id": "native-medusa-conservation",
@@ -118,8 +182,8 @@
     ],
     "securify2": [
       "dao-vulnerability",
-      "locked-ether",
-      "unrestricted-write"
+      "unrestricted-write",
+      "division-by-zero"
     ],
     "medusa": [
       "state-transition-invariants",
