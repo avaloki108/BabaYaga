@@ -21,7 +21,7 @@
     },
     "medusa": {
       "repository": "https://github.com/crytic/medusa",
-      "latest_version": "0.1.0",
+      "latest_version": "0.3.0",
       "documentation": "https://github.com/crytic/medusa"
     }
   },
@@ -121,7 +121,44 @@
         "status": "active"
       }
     ],
-    "medusa": []
+    "medusa": [
+      {
+        "detector_id": "native-medusa-conservation",
+        "name": "Conservation Invariants",
+        "upstream_detector_id": "conservation-invariants",
+        "source_version": "0.3.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/medusa_detectors/conservation_invariants.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-medusa-permissions",
+        "name": "Permission Invariants",
+        "upstream_detector_id": "permission-invariants",
+        "source_version": "0.3.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/medusa_detectors/permission_invariants.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-medusa-liveness",
+        "name": "Liveness Invariants",
+        "upstream_detector_id": "liveness-invariants",
+        "source_version": "0.3.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/medusa_detectors/liveness_invariants.py",
+        "status": "active"
+      },
+      {
+        "detector_id": "native-medusa-properties",
+        "name": "Property Violations",
+        "upstream_detector_id": "property-violations",
+        "source_version": "0.3.0",
+        "last_updated": "2024-01-15",
+        "implementation_file": "babayaga/native/medusa_detectors/property_violations.py",
+        "status": "active"
+      }
+    ]
   },
   "planned_detectors": {
     "slither": [
@@ -149,9 +186,9 @@
       "division-by-zero"
     ],
     "medusa": [
-      "invariant-violations",
-      "assertion-failures",
-      "property-violations"
+      "state-transition-invariants",
+      "cross-contract-invariants",
+      "temporal-properties"
     ]
   }
 }
