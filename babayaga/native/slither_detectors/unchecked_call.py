@@ -93,8 +93,8 @@ class UncheckedCallDetector(BaseDetector):
         # 2. Not used in a require/assert
         # 3. Not used in an if statement
         
-        # First check if there's an external call
-        has_call = bool(re.search(r'\.call\s*\(|\.send\s*\(|\.delegatecall\s*\(', line))
+        # First check if there's an external call (including with {value: ...} syntax)
+        has_call = bool(re.search(r'\.call[\s\{]|\.send\s*\(|\.delegatecall[\s\{]', line))
         
         if not has_call:
             return False

@@ -101,8 +101,8 @@ class ReentrancyDetector(BaseDetector):
         """Check if line contains an external call."""
         # Common patterns for external calls
         patterns = [
-            r'\.call\s*\(',
-            r'\.delegatecall\s*\(',
+            r'\.call[\s\{]',  # .call( or .call{
+            r'\.delegatecall[\s\{]',
             r'\.send\s*\(',
             r'\.transfer\s*\(',
             r'\w+\([^)]*\)\s*\.value\s*\(',
@@ -115,6 +115,7 @@ class ReentrancyDetector(BaseDetector):
         # Common patterns for state changes
         patterns = [
             r'\w+\s*=\s*[^=]',  # Assignment
+            r'\w+\[.+\]\s*=',   # Array/mapping assignment
             r'\w+\s*\+=',       # Addition assignment
             r'\w+\s*-=',        # Subtraction assignment
             r'\w+\s*\*=',       # Multiplication assignment
