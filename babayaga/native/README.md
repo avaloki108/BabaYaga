@@ -226,9 +226,13 @@ engine.export_version_manifest('DETECTORS_MANIFEST.json')
 - [ ] Additional Mythril detectors
 
 ### Phase 3: Medusa & Securify2
-- [ ] Invariant checking (Medusa-style)
+- [x] Invariant checking (Medusa-style)
+  - [x] Conservation invariants (balance/supply tracking)
+  - [x] Permission invariants (access control)
+  - [x] Liveness invariants (state reachability)
+  - [x] Property violation detection
 - [ ] Datalog patterns (Securify2-style)
-- [ ] Property-based testing integration
+- [x] Property-based testing integration
 
 ### Phase 4: Advanced Features
 - [ ] AST-based analysis (more accurate than regex)
@@ -247,9 +251,98 @@ When adding new detectors:
 5. Document any patterns or limitations
 6. Cross-validate with upstream tool if possible
 
+## Medusa-Style Symbolic Analysis
+
+The native engine now includes Medusa-inspired symbolic analysis and invariant checking:
+
+### Conservation Invariants (`native-medusa-conservation`)
+
+Detects violations of conservation laws:
+- Balance conservation (sum of balances should not change unexpectedly)
+- Supply conservation (total supply tracking)
+- Token conservation (tokens shouldn't appear/disappear)
+
+**Example violation:**
+```solidity
+function mint(address to, uint256 amount) public {
+    balances[to] += amount;
+    // Missing: totalSupply += amount;
+}
+```
+
+### Permission Invariants (`native-medusa-permissions`)
+
+Detects missing or improper access control:
+- Critical functions without access control
+- Improper owner/admin checks
+- Unauthorized state modifications
+
+**Example violation:**
+```solidity
+function setOwner(address newOwner) public {
+    owner = newOwner;  // Missing: require(msg.sender == owner);
+}
+```
+
+### Liveness Invariants (`native-medusa-liveness`)
+
+Detects deadlocks and unreachable states:
+- Functions that always revert
+- Unreachable code paths
+- Stuck states
+
+**Example violation:**
+```solidity
+function withdraw() public {
+    require(paused == false);
+    require(balance > 0);
+    require(msg.sender == owner);
+    // If all three conditions are never true together, function is deadlocked
+}
+```
+
+### Property Violations (`native-medusa-properties`)
+
+Detects violations of custom properties:
+- echidna_* property functions
+- invariant_* functions
+- Custom assertions
+
+**Example property:**
+```solidity
+function echidna_balance_conservation() public view returns (bool) {
+    return totalSupply == sumOfBalances();
+}
+```
+
+## Symbolic Execution Engine
+
+The symbolic execution engine provides:
+- **Symbolic State Tracking**: Track possible states and constraints
+- **Path Exploration**: Explore execution paths symbolically
+- **Constraint Solving**: Identify satisfiable/unsatisfiable conditions
+- **Invariant Verification**: Check invariants across execution paths
+
+### Limitations
+
+- **Simplified SMT Solving**: Uses pattern matching instead of full SMT solver
+- **Limited Loop Unrolling**: Deep loops may not be fully analyzed
+- **Heuristic-Based**: Some checks use heuristics rather than complete symbolic analysis
+- **No External Calls**: External contract interactions are approximated
+
+### Future Enhancements
+
+- Integration with Z3 or other SMT solvers
+- More sophisticated path exploration strategies
+- Support for complex data structures (nested mappings, structs)
+- Cross-contract symbolic analysis
+- Temporal properties (LTL/CTL)
+
 ## Resources
 
 - **Slither Detectors**: https://github.com/crytic/slither/wiki/Detector-Documentation
 - **Mythril Docs**: https://mythril-classic.readthedocs.io/
+- **Medusa**: https://github.com/crytic/medusa
+- **Echidna**: https://github.com/crytic/echidna
 - **SWC Registry**: https://swcregistry.io/
 - **Smart Contract Best Practices**: https://consensys.github.io/smart-contract-best-practices/
