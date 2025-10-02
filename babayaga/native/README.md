@@ -24,9 +24,16 @@ babayaga/native/
 │   ├── reentrancy.py
 │   ├── tx_origin.py
 │   └── unchecked_call.py
+├── securify2_detectors/      # Native Securify2 implementations
+│   ├── integer_overflow.py
+│   ├── uninitialized_storage.py
+│   ├── missing_access_control.py
+│   ├── timestamp_dependence.py
+│   ├── unsafe_delegatecall.py
+│   ├── unprotected_selfdestruct.py
+│   └── locked_ether.py
 ├── mythril_detectors/        # Native Mythril implementations (planned)
-├── medusa_detectors/         # Native Medusa implementations (planned)
-└── securify2_detectors/      # Native Securify2 implementations (planned)
+└── medusa_detectors/         # Native Medusa implementations (planned)
 ```
 
 ## Using Native Analysis
@@ -178,6 +185,22 @@ engine.export_version_manifest('DETECTORS_MANIFEST.json')
 "
 ```
 
+## Implemented Detectors
+
+### Slither-Based Detectors
+- **Reentrancy Detection**: Detects reentrancy vulnerabilities (SWC-107)
+- **tx.origin Usage**: Detects dangerous use of tx.origin for authorization (SWC-115)
+- **Unchecked Calls**: Detects unchecked return values from low-level calls (SWC-104)
+
+### Securify2-Based Detectors (Datalog-Inspired)
+- **Integer Overflow/Underflow**: Detects unchecked arithmetic operations (SWC-101)
+- **Uninitialized Storage**: Detects uninitialized storage pointers (SWC-109)
+- **Missing Access Control**: Detects state-changing functions without access control (SWC-105)
+- **Timestamp Dependence**: Detects reliance on block.timestamp (SWC-116)
+- **Unsafe Delegatecall**: Detects delegatecall to untrusted addresses (SWC-112)
+- **Unprotected Selfdestruct**: Detects selfdestruct without access control (SWC-106)
+- **Locked Ether**: Detects contracts that can receive but not withdraw ether (SWC-132)
+
 ## Detector Categories
 
 - **REENTRANCY**: Reentrancy vulnerabilities
@@ -219,15 +242,23 @@ engine.export_version_manifest('DETECTORS_MANIFEST.json')
 - [x] Unchecked calls
 - [ ] Additional Slither detectors (see DETECTORS_MANIFEST.json)
 
-### Phase 2: Mythril Detectors
-- [ ] Integer overflow/underflow
-- [ ] Unprotected selfdestruct
+### Phase 2: Securify2 Detectors ✓
+- [x] Integer overflow/underflow detection
+- [x] Uninitialized storage pointer detection
+- [x] Missing access control detection
+- [x] Timestamp dependence detection
+- [x] Unsafe delegatecall detection
+- [x] Unprotected selfdestruct detection
+- [x] Locked ether detection
+- [ ] Additional Securify2 patterns (DAO vulnerability, unrestricted write, etc.)
+
+### Phase 3: Mythril Detectors
 - [ ] Delegatecall to untrusted callee
+- [ ] State change after external calls
 - [ ] Additional Mythril detectors
 
-### Phase 3: Medusa & Securify2
+### Phase 4: Medusa Integration
 - [ ] Invariant checking (Medusa-style)
-- [ ] Datalog patterns (Securify2-style)
 - [ ] Property-based testing integration
 
 ### Phase 4: Advanced Features
