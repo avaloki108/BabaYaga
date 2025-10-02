@@ -52,7 +52,6 @@ test = [
 security = [
     "slither-analyzer",
     "mythril",
-    "echidna-test",
     "securify-2"
 ]
 
