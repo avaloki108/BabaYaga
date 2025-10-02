@@ -15,6 +15,13 @@ import re
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
 
+# Import native analysis engine
+try:
+    from babayaga.native.native_engine import NativeAnalysisEngine
+    NATIVE_ANALYSIS_AVAILABLE = True
+except ImportError:
+    NATIVE_ANALYSIS_AVAILABLE = False
+
 @dataclass
 class StaticFinding:
     """Static analysis finding with comprehensive metadata."""
@@ -57,8 +64,19 @@ class StaticAnalysisEngine:
             'slither': self._check_slither(),
             'securify2': self._check_securify2(),
             'solhint': self._check_solhint(),
-            'custom': True  # Always available
+            'custom': True,  # Always available
+            'native': NATIVE_ANALYSIS_AVAILABLE  # Native detectors
         }
+        
+        # Initialize native analysis engine if available
+        self.native_engine = None
+        if NATIVE_ANALYSIS_AVAILABLE:
+            try:
+                self.native_engine = NativeAnalysisEngine(console)
+                self.logger.info("Native analysis engine initialized")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize native analysis engine: {e}")
+                self.tools_available['native'] = False
         
         # Analysis results
         self.findings: List[StaticFinding] = []
@@ -113,7 +131,13 @@ class StaticAnalysisEngine:
         # Prepare analysis tasks
         analysis_tasks = []
         
-        if self.tools_available['slither']:
+        # Prefer native analysis if available and configured
+        use_native = config.get('use_native_analysis', True)
+        
+        if use_native and self.tools_available['native']:
+            analysis_tasks.append(('native', self._run_native_analysis))
+        elif self.tools_available['slither']:
+            # Fallback to subprocess-based Slither
             analysis_tasks.append(('slither', self._run_slither_analysis))
         
         if self.tools_available['securify2']:
@@ -169,6 +193,57 @@ class StaticAnalysisEngine:
         
         # Generate comprehensive report
         return self._generate_static_analysis_report()
+    
+    def _run_native_analysis(self, target_path: str, config: Dict[str, Any], 
+                            progress: Progress, task_id: int) -> List[StaticFinding]:
+        """Run native Python-based static analysis."""
+        
+        findings = []
+        
+        if not self.native_engine:
+            self.logger.warning("Native analysis engine not available")
+            return findings
+        
+        try:
+            progress.update(task_id, advance=10)
+            
+            # Run native analysis (synchronous wrapper for async method)
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            progress.update(task_id, advance=20)
+            
+            # Analyze with native engine
+            if os.path.isfile(target_path):
+                result = loop.run_until_complete(
+                    self.native_engine.analyze_file(target_path, config)
+                )
+                native_findings = result.get('findings', [])
+            else:
+                result = loop.run_until_complete(
+                    self.native_engine.analyze_project(target_path, config)
+                )
+                native_findings = result.get('findings', [])
+            
+            loop.close()
+            
+            progress.update(task_id, advance=50)
+            
+            # Convert native findings to StaticFinding format
+            for native_finding in native_findings:
+                finding = self._create_native_finding(native_finding)
+                if finding:
+                    findings.append(finding)
+            
+            progress.update(task_id, advance=20)
+            
+            self.logger.info(f"Native analysis found {len(findings)} issues")
+            
+        except Exception as e:
+            self.logger.error(f"Native analysis failed: {e}")
+        
+        return findings
     
     def _run_slither_analysis(self, target_path: str, config: Dict[str, Any], 
                              progress: Progress, task_id: int) -> List[StaticFinding]:
@@ -370,6 +445,33 @@ class StaticAnalysisEngine:
             self.logger.error(f"Custom analysis failed: {e}")
         
         return findings
+    
+    def _create_native_finding(self, native_finding: Dict) -> Optional[StaticFinding]:
+        """Create finding from native detector result."""
+        
+        try:
+            return StaticFinding(
+                id=native_finding.get('detector_id', 'native_unknown'),
+                title=native_finding.get('title', 'Unknown Issue'),
+                description=native_finding.get('description', ''),
+                severity=native_finding.get('severity', 'Medium'),
+                confidence=native_finding.get('confidence', 0.7),
+                tool='native',
+                category=native_finding.get('category', 'static_analysis'),
+                file_path=native_finding.get('file_path', ''),
+                line_number=native_finding.get('line_number'),
+                column_number=native_finding.get('column_number'),
+                function_name=native_finding.get('function_name'),
+                swc_id=native_finding.get('swc_id'),
+                cwe_id=native_finding.get('cwe_id'),
+                code_snippet=native_finding.get('code_snippet'),
+                remediation=native_finding.get('remediation'),
+                references=native_finding.get('references', [])
+            )
+            
+        except Exception as e:
+            self.logger.error(f"Failed to create native finding: {e}")
+            return None
     
     def _create_slither_finding(self, detector_result: Dict) -> Optional[StaticFinding]:
         """Create finding from Slither detector result."""
