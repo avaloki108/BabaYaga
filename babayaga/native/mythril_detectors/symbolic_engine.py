@@ -54,10 +54,10 @@ class ExecutionState:
         return ExecutionState(
             line_number=self.line_number,
             variables=self.variables.copy(),
-            constraints=self.constraints.copy(),
-            calls_made=self.calls_made.copy(),
-            state_changes=self.state_changes.copy(),
-            balance_checks=self.balance_checks.copy()
+            constraints=self.constraints[:],
+            calls_made=self.calls_made[:],
+            state_changes=self.state_changes[:],
+            balance_checks=self.balance_checks[:]
         )
 
 
@@ -158,6 +158,7 @@ class SimplifiedSymbolicEngine:
         # Check for assignment patterns
         patterns = [
             r'\w+\s*=\s*[^=]',
+            r'\w+\[.+\]\s*=',   # Array/mapping assignment
             r'\w+\s*\+=',
             r'\w+\s*-=',
             r'\w+\s*\*=',
@@ -172,6 +173,11 @@ class SimplifiedSymbolicEngine:
     
     def _extract_modified_variable(self, line: str) -> Optional[str]:
         """Extract the name of the modified variable."""
+        # Try to find array/mapping assignment first
+        match = re.search(r'(\w+)\[.+\]\s*=', line)
+        if match:
+            return match.group(1)
+        
         # Try to find variable name before assignment
         match = re.search(r'(\w+)\s*[=\+\-\*\/]=', line)
         if match:

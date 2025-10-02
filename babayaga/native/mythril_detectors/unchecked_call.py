@@ -64,12 +64,11 @@ class UncheckedCallSymbolicDetector(BaseDetector):
             unchecked_calls = self.engine.check_unchecked_calls(states)
             
             for line_offset, call_type in unchecked_calls:
-                absolute_line = func_start_line + line_offset
-                
                 # Check if return value is actually checked
-                if self._is_return_checked(func_code, line_offset):
+                if self._is_return_checked(func_code, line_offset - 1):  # Adjust for 1-based indexing
                     continue
                 
+                absolute_line = func_start_line + line_offset
                 finding = self._create_finding(
                     func_name, absolute_line, call_type, contract_source, file_path
                 )
@@ -87,9 +86,15 @@ class UncheckedCallSymbolicDetector(BaseDetector):
         
         # Check if result is captured and checked
         if re.search(r'\(bool\s+\w+,', call_line) or re.search(r'bool\s+\w+\s*=.*\.call', call_line):
-            # Return value is captured, check if it's used in require/if
-            for line in lines[call_line_offset:call_line_offset+5]:
-                if 'require' in line or 'assert' in line or 'if' in line:
+            # Return value is captured, check if it's used in require/if/assert
+            # Look at the next few lines after the call
+            for i in range(call_line_offset + 1, min(call_line_offset + 6, len(lines))):
+                line = lines[i].strip()
+                if 'require' in line or 'assert' in line:
+                    # Check if the captured variable is used
+                    if 'success' in line or re.search(r'\w+', call_line):
+                        return True
+                if 'if' in line and 'success' in line:
                     return True
         
         return False
